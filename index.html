@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caro & Suri</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #000;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+
+    .scene {
+      position: relative;
+      width: min(90vw, 420px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Floral border SVG wrapper ── */
+    .floral-frame {
+      position: relative;
+      width: 100%;
+      padding: 48px;
+    }
+
+    .floral-frame svg.corner {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      opacity: 0.85;
+    }
+
+    .floral-frame svg.corner.tl { top: 0;    left: 0;    transform: rotate(0deg); }
+    .floral-frame svg.corner.tr { top: 0;    right: 0;   transform: rotate(90deg); }
+    .floral-frame svg.corner.br { bottom: 0; right: 0;   transform: rotate(180deg); }
+    .floral-frame svg.corner.bl { bottom: 0; left: 0;    transform: rotate(270deg); }
+
+    /* Side vine lines */
+    .floral-frame svg.side-h {
+      position: absolute;
+      height: 14px;
+      left: 90px;
+      right: 90px;
+      opacity: 0.7;
+    }
+    .floral-frame svg.side-v {
+      position: absolute;
+      width: 14px;
+      top: 90px;
+      bottom: 90px;
+      opacity: 0.7;
+    }
+
+    .floral-frame svg.side-h.top    { top: 38px; }
+    .floral-frame svg.side-h.bottom { bottom: 38px; }
+    .floral-frame svg.side-v.left   { left: 38px; }
+    .floral-frame svg.side-v.right  { right: 38px; }
+
+    /* ── Video ── */
+    .video-wrapper {
+      width: 100%;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(200, 160, 100, 0.18);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="floral-frame">
+
+    <!-- Corner florals (top-left, rotated for others) -->
+    <!-- TL -->
+    <svg class="corner tl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- Stem curves -->
+      <path d="M8 92 C8 60, 40 40, 92 8" stroke="#c8a050" stroke-width="1.8" fill="none" opacity="0.6"/>
+      <!-- Large rose bud top-right -->
+      <circle cx="86" cy="14" r="9" fill="#8b1a2f" opacity="0.9"/>
+      <circle cx="86" cy="14" r="6" fill="#c0294a" opacity="0.9"/>
+      <ellipse cx="82" cy="10" rx="4" ry="5" fill="#d94060" opacity="0.7" transform="rotate(-30 82 10)"/>
+      <ellipse cx="91" cy="11" rx="3" ry="4" fill="#d94060" opacity="0.6" transform="rotate(20 91 11)"/>
+      <!-- Leaves -->
+      <ellipse cx="72" cy="26" rx="10" ry="5" fill="#2d6a30" opacity="0.85" transform="rotate(-45 72 26)"/>
+      <ellipse cx="60" cy="38" rx="9" ry="4" fill="#3a7d3e" opacity="0.75" transform="rotate(-45 60 38)"/>
+      <!-- Small blossom mid -->
+      <circle cx="52" cy="50" r="5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="52" cy="50" r="3" fill="#ff8099" opacity="0.9"/>
+      <!-- Tiny buds -->
+      <circle cx="30" cy="70" r="3.5" fill="#8b1a2f" opacity="0.8"/>
+      <circle cx="30" cy="70" r="2" fill="#d94060"/>
+      <circle cx="18" cy="82" r="2.5" fill="#8b1a2f" opacity="0.7"/>
+      <circle cx="18" cy="82" r="1.5" fill="#c0294a"/>
+      <!-- Tiny leaves -->
+      <ellipse cx="40" cy="60" rx="6" ry="3" fill="#2d6a30" opacity="0.75" transform="rotate(-45 40 60)"/>
+      <ellipse cx="22" cy="76" rx="5" ry="2.5" fill="#3a7d3e" opacity="0.7" transform="rotate(-45 22 76)"/>
+      <!-- Dots -->
+      <circle cx="66" cy="32" r="1.5" fill="#f5c842" opacity="0.8"/>
+      <circle cx="44" cy="54" r="1.2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- TR -->
+    <svg class="corner tr" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 92 C8 60, 40 40, 92 8" stroke="#c8a050" stroke-width="1.8" fill="none" opacity="0.6"/>
+      <circle cx="86" cy="14" r="9" fill="#8b1a2f" opacity="0.9"/>
+      <circle cx="86" cy="14" r="6" fill="#c0294a" opacity="0.9"/>
+      <ellipse cx="82" cy="10" rx="4" ry="5" fill="#d94060" opacity="0.7" transform="rotate(-30 82 10)"/>
+      <ellipse cx="91" cy="11" rx="3" ry="4" fill="#d94060" opacity="0.6" transform="rotate(20 91 11)"/>
+      <ellipse cx="72" cy="26" rx="10" ry="5" fill="#2d6a30" opacity="0.85" transform="rotate(-45 72 26)"/>
+      <ellipse cx="60" cy="38" rx="9" ry="4" fill="#3a7d3e" opacity="0.75" transform="rotate(-45 60 38)"/>
+      <circle cx="52" cy="50" r="5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="52" cy="50" r="3" fill="#ff8099" opacity="0.9"/>
+      <circle cx="30" cy="70" r="3.5" fill="#8b1a2f" opacity="0.8"/>
+      <circle cx="30" cy="70" r="2" fill="#d94060"/>
+      <circle cx="18" cy="82" r="2.5" fill="#8b1a2f" opacity="0.7"/>
+      <circle cx="18" cy="82" r="1.5" fill="#c0294a"/>
+      <ellipse cx="40" cy="60" rx="6" ry="3" fill="#2d6a30" opacity="0.75" transform="rotate(-45 40 60)"/>
+      <ellipse cx="22" cy="76" rx="5" ry="2.5" fill="#3a7d3e" opacity="0.7" transform="rotate(-45 22 76)"/>
+      <circle cx="66" cy="32" r="1.5" fill="#f5c842" opacity="0.8"/>
+      <circle cx="44" cy="54" r="1.2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- BR -->
+    <svg class="corner br" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 92 C8 60, 40 40, 92 8" stroke="#c8a050" stroke-width="1.8" fill="none" opacity="0.6"/>
+      <circle cx="86" cy="14" r="9" fill="#8b1a2f" opacity="0.9"/>
+      <circle cx="86" cy="14" r="6" fill="#c0294a" opacity="0.9"/>
+      <ellipse cx="82" cy="10" rx="4" ry="5" fill="#d94060" opacity="0.7" transform="rotate(-30 82 10)"/>
+      <ellipse cx="91" cy="11" rx="3" ry="4" fill="#d94060" opacity="0.6" transform="rotate(20 91 11)"/>
+      <ellipse cx="72" cy="26" rx="10" ry="5" fill="#2d6a30" opacity="0.85" transform="rotate(-45 72 26)"/>
+      <ellipse cx="60" cy="38" rx="9" ry="4" fill="#3a7d3e" opacity="0.75" transform="rotate(-45 60 38)"/>
+      <circle cx="52" cy="50" r="5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="52" cy="50" r="3" fill="#ff8099" opacity="0.9"/>
+      <circle cx="30" cy="70" r="3.5" fill="#8b1a2f" opacity="0.8"/>
+      <circle cx="30" cy="70" r="2" fill="#d94060"/>
+      <circle cx="18" cy="82" r="2.5" fill="#8b1a2f" opacity="0.7"/>
+      <circle cx="18" cy="82" r="1.5" fill="#c0294a"/>
+      <ellipse cx="40" cy="60" rx="6" ry="3" fill="#2d6a30" opacity="0.75" transform="rotate(-45 40 60)"/>
+      <ellipse cx="22" cy="76" rx="5" ry="2.5" fill="#3a7d3e" opacity="0.7" transform="rotate(-45 22 76)"/>
+      <circle cx="66" cy="32" r="1.5" fill="#f5c842" opacity="0.8"/>
+      <circle cx="44" cy="54" r="1.2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- BL -->
+    <svg class="corner bl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 92 C8 60, 40 40, 92 8" stroke="#c8a050" stroke-width="1.8" fill="none" opacity="0.6"/>
+      <circle cx="86" cy="14" r="9" fill="#8b1a2f" opacity="0.9"/>
+      <circle cx="86" cy="14" r="6" fill="#c0294a" opacity="0.9"/>
+      <ellipse cx="82" cy="10" rx="4" ry="5" fill="#d94060" opacity="0.7" transform="rotate(-30 82 10)"/>
+      <ellipse cx="91" cy="11" rx="3" ry="4" fill="#d94060" opacity="0.6" transform="rotate(20 91 11)"/>
+      <ellipse cx="72" cy="26" rx="10" ry="5" fill="#2d6a30" opacity="0.85" transform="rotate(-45 72 26)"/>
+      <ellipse cx="60" cy="38" rx="9" ry="4" fill="#3a7d3e" opacity="0.75" transform="rotate(-45 60 38)"/>
+      <circle cx="52" cy="50" r="5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="52" cy="50" r="3" fill="#ff8099" opacity="0.9"/>
+      <circle cx="30" cy="70" r="3.5" fill="#8b1a2f" opacity="0.8"/>
+      <circle cx="30" cy="70" r="2" fill="#d94060"/>
+      <circle cx="18" cy="82" r="2.5" fill="#8b1a2f" opacity="0.7"/>
+      <circle cx="18" cy="82" r="1.5" fill="#c0294a"/>
+      <ellipse cx="40" cy="60" rx="6" ry="3" fill="#2d6a30" opacity="0.75" transform="rotate(-45 40 60)"/>
+      <ellipse cx="22" cy="76" rx="5" ry="2.5" fill="#3a7d3e" opacity="0.7" transform="rotate(-45 22 76)"/>
+      <circle cx="66" cy="32" r="1.5" fill="#f5c842" opacity="0.8"/>
+      <circle cx="44" cy="54" r="1.2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- Top vine -->
+    <svg class="side-h top" viewBox="0 0 200 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 7 Q25 2, 50 7 Q75 12, 100 7 Q125 2, 150 7 Q175 12, 200 7" stroke="#c8a050" stroke-width="1.5" fill="none"/>
+      <circle cx="50" cy="7" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="150" cy="7" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="100" cy="7" r="2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- Bottom vine -->
+    <svg class="side-h bottom" viewBox="0 0 200 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 7 Q25 2, 50 7 Q75 12, 100 7 Q125 2, 150 7 Q175 12, 200 7" stroke="#c8a050" stroke-width="1.5" fill="none"/>
+      <circle cx="50" cy="7" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="150" cy="7" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="100" cy="7" r="2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- Left vine -->
+    <svg class="side-v left" viewBox="0 14 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 0 Q2 25, 7 50 Q12 75, 7 100 Q2 125, 7 150 Q12 175, 7 200" stroke="#c8a050" stroke-width="1.5" fill="none"/>
+      <circle cx="7" cy="50" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="7" cy="150" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="7" cy="100" r="2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- Right vine -->
+    <svg class="side-v right" viewBox="0 14 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 0 Q2 25, 7 50 Q12 75, 7 100 Q2 125, 7 150 Q12 175, 7 200" stroke="#c8a050" stroke-width="1.5" fill="none"/>
+      <circle cx="7" cy="50" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="7" cy="150" r="2.5" fill="#c0294a" opacity="0.8"/>
+      <circle cx="7" cy="100" r="2" fill="#f5c842" opacity="0.7"/>
+    </svg>
+
+    <!-- The video -->
+    <div class="video-wrapper">
+      <video controls playsinline>
+        <source src="caroNSuri.mov" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
