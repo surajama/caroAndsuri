@@ -13,10 +13,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #333906;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+      background: #333906 url('wavyBackground.png') center / cover no-repeat;
     }
 
     video {
@@ -37,17 +34,5 @@
     <source src="finalVid_sdr.mp4" type="video/mp4">
   </video>
 
-  <script>
-    let wavy = false;
-    document.body.addEventListener('click', function(e) {
-      if (e.target.closest('video')) return;
-      wavy = !wavy;
-      if (wavy) {
-        document.body.style.backgroundImage = 'url(wavyBackground.png)';
-      } else {
-        document.body.style.backgroundImage = 'none';
-      }
-    });
-  </script>
 </body>
 </html>
