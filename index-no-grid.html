@@ -258,7 +258,9 @@
 
       // Thick-glass depth at the edge of each pane, then the sunlight: a warm glow
       // strongest towards the upper right, fading across the lattice.
-      sunlight = el('g', { opacity: 0 }, lattice);
+      // Note: the light layers fade individually. Fading their parent group instead would make the
+      // browser blend them as flat grey until the fade ends, then suddenly switch (a visible colour jump).
+      sunlight = el('g', {}, lattice);
       lattice.insertBefore(sunlight, latticeRect);
       el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#pane-shade)' }, lattice)
       lattice.insertBefore(lattice.lastChild, sunlight);
@@ -328,19 +330,37 @@
         </filter>
         <!-- Carving: a dark groove floor, a shadow cast by the sunlit edge, and light catching the far wall -->
         <filter id="carve" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-700" y="-700" width="1400" height="1400">
-          <feFlood flood-color="#120804" flood-opacity="0.72"/>
+          <!-- deep, dark groove floor -->
+          <feFlood flood-color="#0a0402" flood-opacity="0.88"/>
           <feComposite in2="SourceAlpha" operator="in" result="floor"/>
-          <feOffset in="SourceAlpha" dx="-2.2" dy="2.2" result="shifted"/>
+          <!-- the sunlit edge casts a long shadow down into the groove -->
+          <feOffset in="SourceAlpha" dx="-3.4" dy="3.4" result="shifted"/>
           <feComposite in="SourceAlpha" in2="shifted" operator="out" result="shadowEdge"/>
-          <feFlood flood-color="#000" flood-opacity="0.85"/>
+          <feFlood flood-color="#000"/>
           <feComposite in2="shadowEdge" operator="in"/>
-          <feGaussianBlur stdDeviation="0.7"/>
+          <feGaussianBlur stdDeviation="0.9"/>
           <feComposite in2="SourceAlpha" operator="in" result="shadow"/>
-          <feOffset in="SourceAlpha" dx="1.6" dy="-1.6" result="shifted2"/>
+          <!-- light catches the far wall of the groove -->
+          <feOffset in="SourceAlpha" dx="1.8" dy="-1.8" result="shifted2"/>
           <feComposite in="SourceAlpha" in2="shifted2" operator="out" result="lightEdge"/>
-          <feFlood flood-color="#ffd9a8" flood-opacity="0.55"/>
+          <feFlood flood-color="#ffd7a0" flood-opacity="0.8"/>
           <feComposite in2="lightEdge" operator="in" result="light"/>
-          <feMerge><feMergeNode in="floor"/><feMergeNode in="shadow"/><feMergeNode in="light"/></feMerge>
+          <!-- a bright lip on the wood surface along the sunlit side of the cut -->
+          <feOffset in="SourceAlpha" dx="1.6" dy="-1.6" result="lipShift"/>
+          <feComposite in="lipShift" in2="SourceAlpha" operator="out" result="lipEdge"/>
+          <feFlood flood-color="#ffe2bb" flood-opacity="0.35"/>
+          <feComposite in2="lipEdge" operator="in"/>
+          <feGaussianBlur stdDeviation="0.6" result="lip"/>
+          <!-- a soft shadow on the wood surface along the shaded side of the cut -->
+          <feOffset in="SourceAlpha" dx="-1.4" dy="1.4" result="rimShift"/>
+          <feComposite in="rimShift" in2="SourceAlpha" operator="out" result="rimEdge"/>
+          <feFlood flood-color="#000" flood-opacity="0.45"/>
+          <feComposite in2="rimEdge" operator="in"/>
+          <feGaussianBlur stdDeviation="0.8" result="rim"/>
+          <feMerge>
+            <feMergeNode in="rim"/><feMergeNode in="lip"/>
+            <feMergeNode in="floor"/><feMergeNode in="shadow"/><feMergeNode in="light"/>
+          </feMerge>
         </filter>`);
 
       // Wood replaces the white lattice bars.
@@ -482,7 +502,10 @@
       if (SHOW_GRID) lattice.setAttribute('opacity', pLattice);
       if (sunlight) {
         const pSun = ease(progress(t, T.sunlight));
-        sunlight.setAttribute('opacity', pSun);
+        for (const layer of sunlight.children) {
+          layer.dataset.full ??= layer.getAttribute('opacity') ?? 1;
+          layer.setAttribute('opacity', layer.dataset.full * pSun);
+        }
       }
       if (wood) {
         // The solid board gives way to the lattice; the carved outline stays fine.
