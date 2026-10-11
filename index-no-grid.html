@@ -38,6 +38,31 @@
     #logo #lattice-tile path { fill: var(--lattice-color); }
     #logo #lattice-hole { fill: #000; }  /* the area the lattice is cut away from */
 
+    /* Stained glass version: beams of sunlight fanning down from the upper right */
+    .sun-rays {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      mix-blend-mode: screen;
+      background:
+        repeating-conic-gradient(from 180deg at 105% -15%,
+          rgba(255, 236, 200, 0) 0deg 1.6deg, rgba(255, 236, 200, 0.3) 2.6deg,
+          rgba(255, 236, 200, 0) 3.6deg 6.1deg),
+        repeating-conic-gradient(from 182.5deg at 105% -15%,
+          rgba(255, 226, 180, 0) 0deg 3.4deg, rgba(255, 226, 180, 0.18) 4.8deg,
+          rgba(255, 226, 180, 0) 6.2deg 9.7deg);
+      -webkit-mask-image: radial-gradient(circle at 105% -15%, #000 0%, rgba(0, 0, 0, 0.75) 40%, transparent 95%);
+      mask-image: radial-gradient(circle at 105% -15%, #000 0%, rgba(0, 0, 0, 0.75) 40%, transparent 95%);
+      filter: blur(5px);
+      animation: rays-drift 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes rays-drift {
+      from { transform: rotate(-1.2deg) scale(1.05); }
+      to   { transform: rotate(1.2deg) scale(1.05); }
+    }
+
     #logo .outline {
       fill: none;
       stroke: #fff;
@@ -95,6 +120,7 @@
       gaps:       [3.35, 4.05],  // line breaks fade in where strokes cross
       outline:    [3.55, 5.00],  // flower outline draws itself
       lattice:    [5.00, 5.80],  // paper lattice fades in once the logo is complete
+      sunlight:   [5.40, 7.20],  // (stained glass version) sunlight warms up behind the glass
     };
 
     const NS = 'http://www.w3.org/2000/svg';
@@ -116,6 +142,113 @@
       delete T.lattice;
     }
     document.getElementById('lattice-hole').setAttribute('d', GEOM.holePath);
+
+    // ---- Stained glass (optional): coloured, hammered-glass panes in the lattice openings,
+    // lit from behind by low sunlight from the upper right.
+    const STAINED_GLASS = false;
+
+    // Glass colours sampled from the stained-glass reference photos, brightened as if backlit.
+    // Each entry is [colour, how often it appears].
+    const GLASS_COLOURS = [
+      ['#f29a1f', 5], ['#ffc93c', 5], ['#ff7a1a', 3], ['#e0a632', 3],  // ambers and golds
+      ['#ffe8b0', 4], ['#fff6e2', 3],                                   // clear and champagne
+      ['#c8241b', 2], ['#8f0f1a', 1], ['#ff9a7a', 3], ['#ff9fc4', 2],   // reds, peach, pink
+      ['#7a1f5a', 1],                                                   // plum
+      ['#1f44d6', 2], ['#4fa3ff', 3], ['#8fe0ea', 2], ['#7c84ff', 1],   // blues
+      ['#7fc46a', 3], ['#1f9a52', 2], ['#a8d23a', 2], ['#8c9a24', 1],   // greens
+    ];
+
+    let sunlight = null;
+    if (STAINED_GLASS) {
+      const defs = svg.querySelector('defs');
+      const latticeRect = lattice.querySelector('rect');
+      // Apply the cut-out to the whole lattice so the glass stops at the flower outline too.
+      latticeRect.removeAttribute('mask');
+      lattice.setAttribute('mask', 'url(#lattice-cutout)');
+
+      defs.insertAdjacentHTML('beforeend', `
+        <filter id="hammered" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-2400" y="-2400" width="4800" height="4800">
+          <!-- smooth dimples like hammered glass -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="11" result="rough"/>
+          <feGaussianBlur in="rough" stdDeviation="2.5" result="noise"/>
+          <!-- light bends through the dimples: brighter and darker patches of the same colour -->
+          <feDiffuseLighting in="noise" surfaceScale="4" diffuseConstant="1.08" lighting-color="#fff" result="shade">
+            <feDistantLight azimuth="315" elevation="62"/>
+          </feDiffuseLighting>
+          <feComposite in="SourceGraphic" in2="shade" operator="arithmetic" k1="1" result="tinted"/>
+          <!-- glossy glints where the sun catches the ripples -->
+          <feSpecularLighting in="noise" surfaceScale="5" specularConstant="0.75" specularExponent="90"
+                              lighting-color="#fff4dc" result="glint">
+            <feDistantLight azimuth="315" elevation="62"/>
+          </feSpecularLighting>
+          <feComposite in="glint" in2="SourceAlpha" operator="in" result="glintIn"/>
+          <feComposite in="tinted" in2="glintIn" operator="arithmetic" k2="1" k3="0.12" result="glass"/>
+          <!-- a soft glow of light inside the glass -->
+          <feGaussianBlur in="glass" stdDeviation="22" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="0.25 0 0 0 0  0 0.25 0 0 0  0 0 0.25 0 0  0 0 0 1 0" result="bloom"/>
+          <feBlend in="glass" in2="bloom" mode="screen"/>
+        </filter>
+        <radialGradient id="pane-depth" cx="0.5" cy="0.5" r="0.62">
+          <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0.38"/>
+        </radialGradient>
+        <pattern id="pane-shade" patternUnits="userSpaceOnUse" x="-85" y="-85" width="170" height="170"
+                 patternTransform="translate(0 36) rotate(45)">
+          <rect width="170" height="170" fill="url(#pane-depth)"/>
+        </pattern>
+        <radialGradient id="sun-glow" gradientUnits="userSpaceOnUse" cx="1100" cy="-1250" r="2600">
+          <stop offset="0" stop-color="#ffe9b8" stop-opacity="0.9"/>
+          <stop offset="0.3" stop-color="#ffd98f" stop-opacity="0.5"/>
+          <stop offset="0.7" stop-color="#ffd98f" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="sun-falloff" gradientUnits="userSpaceOnUse" cx="1100" cy="-1250" r="3400">
+          <stop offset="0.3" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0.55"/>
+        </radialGradient>`);
+
+      // Glass panes: one square per lattice tile, in the lattice's rotated grid, with a
+      // repeatable random colour that never matches the pane beside or above it.
+      const glass = el('g', { filter: 'url(#hammered)' }, lattice);
+      lattice.insertBefore(glass, latticeRect);
+      const panes = el('g', { transform: 'translate(0 36) rotate(45)' }, glass);
+      let seed = 20260611;
+      const random = () => {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let r = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+      const bag = GLASS_COLOURS.flatMap(([colour, weight]) => Array(weight).fill(colour));
+      const chosen = {};
+      const R = 2300, n = 20;
+      for (let i = -n; i <= n; i++) {
+        for (let j = -n; j <= n; j++) {
+          const x = (i - j) * 170 * Math.SQRT1_2, y = (i + j) * 170 * Math.SQRT1_2 + 36;
+          if (Math.abs(x) > R || Math.abs(y) > R) continue;
+          let colour;
+          do { colour = bag[Math.floor(random() * bag.length)]; }
+          while (colour === chosen[`${i - 1},${j}`] || colour === chosen[`${i},${j - 1}`]);
+          chosen[`${i},${j}`] = colour;
+          el('rect', { x: i * 170 - 85, y: j * 170 - 85, width: 170, height: 170, fill: colour }, panes);
+        }
+      }
+
+      // Thick-glass depth at the edge of each pane, then the sunlight: a warm glow
+      // strongest towards the upper right, fading across the lattice.
+      sunlight = el('g', { opacity: 0 }, lattice);
+      lattice.insertBefore(sunlight, latticeRect);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#pane-shade)' }, lattice)
+      lattice.insertBefore(lattice.lastChild, sunlight);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#sun-falloff)' }, sunlight);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#sun-glow)',
+                   style: 'mix-blend-mode: soft-light' }, sunlight);
+
+      // Soft beams of sunlight falling across the whole page.
+      const rays = document.createElement('div');
+      rays.className = 'sun-rays';
+      document.body.appendChild(rays);
+      sunlight.rays = rays;
+    }
 
     const flower = el('g', {}, svg);
     const units = [];
@@ -253,9 +386,15 @@
       // The outline draws in as a fine line, then thickens to match the lattice bars as the lattice appears.
       const pLattice = SHOW_GRID ? progress(t, T.lattice) : 0;
       if (SHOW_GRID) lattice.setAttribute('opacity', pLattice);
+      if (sunlight) {
+        const pSun = ease(progress(t, T.sunlight));
+        sunlight.setAttribute('opacity', pSun);
+        sunlight.rays.style.opacity = pSun;
+      }
       outline.setAttribute('stroke-width', lerp(GEOM.outlineThin, GEOM.outlineWidth, ease(pLattice)));
     }
 
+    if (!STAINED_GLASS) delete T.sunlight;
     const END = Math.max(...Object.values(T).map(([, end]) => end));
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) {
