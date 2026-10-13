@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Caro & Suri</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --lattice-color: #fff;
+    }
+
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    #logo {
+      width: min(88vw, 82dvh);
+      height: min(88vw, 82dvh);
+      overflow: visible;
+    }
+
+    #logo path { fill: #fff; }
+
+    /* Die-cut paper lattice behind the logo */
+    #logo #lattice-tile path { fill: var(--lattice-color); }
+    #logo #lattice-hole { fill: #000; }  /* the area the lattice is cut away from */
+    #logo .wood-panel { fill: #fff; }
+
+    /* Stained glass versions: dappled sunlight drifting slowly across the glass */
+    .dapple { animation: dapple-sway 11s ease-in-out infinite; }
+    .dapple.slow { animation: dapple-sway-2 17s ease-in-out infinite; }
+
+    @keyframes dapple-sway {
+      0%, 100% { transform: translate(0px, 0px); }
+      50%      { transform: translate(-70px, 40px); }
+    }
+
+    @keyframes dapple-sway-2 {
+      0%, 100% { transform: translate(0px, 0px); }
+      50%      { transform: translate(55px, -30px); }
+    }
+
+    #logo .outline {
+      fill: none;
+      stroke: #fff;
+      stroke-linejoin: round;
+    }
+  </style>
+</head>
+<body>
+  <svg id="logo" viewBox="-540 -540 1080 1080" aria-label="Caro and Suri logo" role="img">
+    <defs>
+      <!-- One tile of the die-cut lattice: a square opening with softly rounded corners,
+           surrounded by half a bar on every side. Rotated 45 degrees for the diagonal grid. -->
+      <pattern id="lattice-tile" patternUnits="userSpaceOnUse" x="-85" y="-85" width="170" height="170"
+               patternTransform="translate(0 36) rotate(45)">
+        <path fill-rule="evenodd" d="M0 0H170V170H0Z M24 9H146Q161 9 161 24V146Q161 161 146 161H24Q9 161 9 146V24Q9 9 24 9Z"/>
+      </pattern>
+      <!-- The lattice stops at the logo's flower outline, so it never runs behind the logo. -->
+      <mask id="lattice-cutout" maskUnits="userSpaceOnUse" x="-6000" y="-6000" width="12000" height="12000">
+        <rect x="-6000" y="-6000" width="12000" height="12000" fill="#fff"/>
+        <path id="lattice-hole" fill="#000"/>
+      </mask>
+    </defs>
+    <g id="lattice" opacity="0">
+      <rect x="-6000" y="-6000" width="12000" height="12000" fill="url(#lattice-tile)" mask="url(#lattice-cutout)"/>
+    </g>
+  </svg>
+
+  <script>
+    // Logo artwork, traced from the original design. Coordinates are centered on the flower.
+    const GEOM = __GEOM__;
+
+    // The complete C and S used at the start (pen path points and widths).
+    const LETTERS = __LETTERS__;
+
+    // Timeline (seconds after the page loads)
+    // Steps overlap so each one flows straight into the next, with no pauses.
+    const T = {
+      lettersIn:  [0.50, 1.20],  // C and S fade in side by side
+      combine:    [0.95, 2.45],  // they glide together and overlap
+      retract:    [1.25, 2.20],  // borrowed pieces of each letter pull back
+      multiply:   [2.20, 3.75],  // five copies fan out into the flower
+      gaps:       [3.35, 4.05],  // line breaks fade in where strokes cross
+      outline:    [3.55, 5.00],  // flower outline draws itself
+      lattice:    [5.00, 5.80],  // paper lattice fades in once the logo is complete
+      sunlight:   [5.40, 7.20],  // (stained glass version) sunlight warms up behind the glass
+    };
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.getElementById('logo');
+
+    function el(tag, attrs, parent) {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      parent.appendChild(e);
+      return e;
+    }
+
+    // Set to false to show the logo on its own, without the paper lattice.
+    const SHOW_GRID = __SHOW_GRID__;
+
+    const lattice = document.getElementById('lattice');
+    if (!SHOW_GRID) {
+      lattice.remove();
+      delete T.lattice;
+    }
+    document.getElementById('lattice-hole').setAttribute('d', GEOM.holePath);
+
+    // ---- Stained glass (optional): coloured, hammered-glass panes in the lattice openings,
+    // lit from behind by low sunlight from the upper right.
+    const STAINED_GLASS = __STAINED_GLASS__;
+
+    // Glass colours sampled from the stained-glass reference photos, brightened as if backlit.
+    // Each entry is [colour, how often it appears].
+    const GLASS_COLOURS = [
+      ['#f29a1f', 5], ['#ffc93c', 5], ['#ff7a1a', 3], ['#e0a632', 3],  // ambers and golds
+      ['#ffe8b0', 4], ['#fff6e2', 3],                                   // clear and champagne
+      ['#c8241b', 2], ['#8f0f1a', 1], ['#ff9a7a', 3], ['#ff9fc4', 2],   // reds, peach, pink
+      ['#7a1f5a', 1],                                                   // plum
+      ['#1f44d6', 2], ['#4fa3ff', 3], ['#8fe0ea', 2], ['#7c84ff', 1],   // blues
+      ['#7fc46a', 3], ['#1f9a52', 2], ['#a8d23a', 2], ['#8c9a24', 1],   // greens
+    ];
+
+    // Paints a soft grey map of sun flecks (light) and leaf shadow (dark), mid-grey = no change.
+    function dappleTexture(textureSeed) {
+      let s = textureSeed * 7919;
+      const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+      const size = 512;
+      const sketch = document.createElement('canvas');
+      sketch.width = sketch.height = size;
+      const g = sketch.getContext('2d');
+      g.fillStyle = '#626262';
+      g.fillRect(0, 0, size, size);
+      const blob = (x, y, r, colour, alpha) => {
+        const grad = g.createRadialGradient(x, y, 0, x, y, r);
+        grad.addColorStop(0, `rgba(${colour},${alpha})`);
+        grad.addColorStop(1, `rgba(${colour},0)`);
+        g.fillStyle = grad;
+        g.beginPath();
+        g.arc(x, y, r, 0, Math.PI * 2);
+        g.fill();
+      };
+      for (let i = 0; i < 80; i++) blob(rnd() * size, rnd() * size, 18 + rnd() * 40, '0,0,0', 0.7);      // leaf shade
+      for (let i = 0; i < 200; i++) {                                                               // sun flecks
+        const x = rnd() * size, y = rnd() * size;
+        for (let k = 0; k < 3; k++) blob(x + (rnd() - 0.5) * 26, y + (rnd() - 0.5) * 26, 5 + rnd() * 13, '255,250,235', 0.85);
+      }
+      const soft = document.createElement('canvas');
+      soft.width = soft.height = size;
+      const sg = soft.getContext('2d');
+      sg.filter = 'blur(3px)';
+      sg.drawImage(sketch, 0, 0);
+      return soft.toDataURL('image/png');
+    }
+
+    let sunlight = null;
+    if (STAINED_GLASS) {
+      const defs = svg.querySelector('defs');
+      const latticeRect = lattice.querySelector('rect');
+      // Apply the cut-out to the whole lattice so the glass stops at the flower outline too.
+      latticeRect.removeAttribute('mask');
+      lattice.setAttribute('mask', 'url(#lattice-cutout)');
+
+      defs.insertAdjacentHTML('beforeend', `
+        <filter id="hammered" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-2400" y="-2400" width="4800" height="4800">
+          <!-- smooth dimples like hammered glass -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="11" result="rough"/>
+          <feGaussianBlur in="rough" stdDeviation="2.5" result="noise"/>
+          <!-- light bends through the dimples: brighter and darker patches of the same colour -->
+          <feDiffuseLighting in="noise" surfaceScale="4" diffuseConstant="1.08" lighting-color="#fff" result="shade">
+            <feDistantLight azimuth="315" elevation="62"/>
+          </feDiffuseLighting>
+          <feComposite in="SourceGraphic" in2="shade" operator="arithmetic" k1="1" result="tinted"/>
+          <!-- glossy glints where the sun catches the ripples -->
+          <feSpecularLighting in="noise" surfaceScale="5" specularConstant="0.75" specularExponent="90"
+                              lighting-color="#fff4dc" result="glint">
+            <feDistantLight azimuth="315" elevation="62"/>
+          </feSpecularLighting>
+          <feComposite in="glint" in2="SourceAlpha" operator="in" result="glintIn"/>
+          <feComposite in="tinted" in2="glintIn" operator="arithmetic" k2="1" k3="0.12" result="glass"/>
+          <!-- a soft glow of light inside the glass -->
+          <feGaussianBlur in="glass" stdDeviation="22" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="0.25 0 0 0 0  0 0.25 0 0 0  0 0 0.25 0 0  0 0 0 1 0" result="bloom"/>
+          <feBlend in="glass" in2="bloom" mode="screen"/>
+        </filter>
+        <radialGradient id="pane-depth" cx="0.5" cy="0.5" r="0.62">
+          <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0.38"/>
+        </radialGradient>
+        <pattern id="pane-shade" patternUnits="userSpaceOnUse" x="-85" y="-85" width="170" height="170"
+                 patternTransform="translate(0 36) rotate(45)">
+          <rect width="170" height="170" fill="url(#pane-depth)"/>
+        </pattern>
+        <radialGradient id="sun-glow" gradientUnits="userSpaceOnUse" cx="1100" cy="-1250" r="2600">
+          <stop offset="0" stop-color="#ffe9b8" stop-opacity="0.9"/>
+          <stop offset="0.3" stop-color="#ffd98f" stop-opacity="0.5"/>
+          <stop offset="0.7" stop-color="#ffd98f" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="sun-falloff" gradientUnits="userSpaceOnUse" cx="1100" cy="-1250" r="3400">
+          <stop offset="0.3" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0.55"/>
+        </radialGradient>`);
+
+      // Glass panes: one square per lattice tile, in the lattice's rotated grid, with a
+      // repeatable random colour that never matches the pane beside or above it.
+      const glass = el('g', { filter: 'url(#hammered)' }, lattice);
+      lattice.insertBefore(glass, latticeRect);
+      const panes = el('g', { transform: 'translate(0 36) rotate(45)' }, glass);
+      let seed = 20260611;
+      const random = () => {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let r = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+      const bag = GLASS_COLOURS.flatMap(([colour, weight]) => Array(weight).fill(colour));
+      const chosen = {};
+      const R = 2300, n = 20;
+      for (let i = -n; i <= n; i++) {
+        for (let j = -n; j <= n; j++) {
+          const x = (i - j) * 170 * Math.SQRT1_2, y = (i + j) * 170 * Math.SQRT1_2 + 36;
+          if (Math.abs(x) > R || Math.abs(y) > R) continue;
+          let colour;
+          do { colour = bag[Math.floor(random() * bag.length)]; }
+          while (colour === chosen[`${i - 1},${j}`] || colour === chosen[`${i},${j - 1}`]);
+          chosen[`${i},${j}`] = colour;
+          el('rect', { x: i * 170 - 85, y: j * 170 - 85, width: 170, height: 170, fill: colour }, panes);
+        }
+      }
+
+      // Thick-glass depth at the edge of each pane, then the sunlight: a warm glow
+      // strongest towards the upper right, fading across the lattice.
+      // Note: the light layers fade individually. Fading their parent group instead would make the
+      // browser blend them as flat grey until the fade ends, then suddenly switch (a visible colour jump).
+      sunlight = el('g', {}, lattice);
+      lattice.insertBefore(sunlight, latticeRect);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#pane-shade)' }, lattice)
+      lattice.insertBefore(lattice.lastChild, sunlight);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#sun-falloff)' }, sunlight);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#sun-glow)',
+                   style: 'mix-blend-mode: soft-light' }, sunlight);
+
+      // Dappled light: soft patches of sun and leaf-shade on the glass, drifting slowly as if
+      // leaves outside are moving in a breeze. Two layers move at different speeds.
+      for (const [layerSeed, cls, blend, strength] of [[3, 'dapple', 'overlay', 0.9], [9, 'dapple slow', 'soft-light', 0.8]]) {
+        el('image', {
+          href: dappleTexture(layerSeed), x: -2400, y: -2400, width: 4800, height: 4800,
+          preserveAspectRatio: 'none', class: cls, opacity: strength, style: `mix-blend-mode: ${blend}`,
+        }, sunlight);
+      }
+    }
+
+    const flower = el('g', {}, svg);
+    const units = [];
+    const fills = [];
+    for (let k = 0; k < 5; k++) {
+      const unit = el('g', {}, flower);
+      const c = el('g', {}, unit);
+      el('path', { d: GEOM.cSolid }, c);
+      fills.push(el('path', { d: GEOM.cFill }, c));
+      const s = el('g', {}, unit);
+      el('path', { d: GEOM.sSolid }, s);
+      fills.push(el('path', { d: GEOM.sFill }, s));
+      units.push({ unit, c, s });
+    }
+    const outline = el('path', {
+      d: GEOM.outline, class: 'outline', fill: 'none', stroke: '#fff', 'stroke-width': GEOM.outlineWidth,
+      pathLength: 1, 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1,
+    }, flower);
+
+    // ---- Carved wood (optional, used with the stained glass): the lattice bars and the
+    // centre of the flower become one dark walnut screen, and the logo is carved into it.
+    const WOOD = __WOOD__;
+    let wood = null;
+    if (WOOD) {
+      flower.id = 'logo-art';
+      const defs = svg.querySelector('defs');
+      defs.insertAdjacentHTML('beforeend', `
+        <!-- Bookmatched walnut, centred on the flower -->
+        <pattern id="walnut" patternUnits="userSpaceOnUse" x="-800" y="-800" width="1600" height="1600">
+          <image href="wood.jpg" width="1600" height="1600" preserveAspectRatio="none"/>
+        </pattern>
+        <!-- Where there is wood: every lattice bar, plus a solid panel inside the flower -->
+        <mask id="wood-shape" maskUnits="userSpaceOnUse" x="-2400" y="-2400" width="4800" height="4800">
+          <rect x="-2400" y="-2400" width="4800" height="4800" fill="url(#lattice-tile)"/>
+          <path class="wood-panel" d="${GEOM.panelPath}"/>
+        </mask>
+        <!-- Softly rounded, bevelled edges lit by the sun from the upper right -->
+        <filter id="bevel" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-2400" y="-2400" width="4800" height="4800">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="bump"/>
+          <feDiffuseLighting in="bump" surfaceScale="5" diffuseConstant="1.15" lighting-color="#fff" result="shade">
+            <feDistantLight azimuth="315" elevation="50"/>
+          </feDiffuseLighting>
+          <feComposite in="SourceGraphic" in2="shade" operator="arithmetic" k1="1" result="shaded"/>
+          <feSpecularLighting in="bump" surfaceScale="5" specularConstant="0.5" specularExponent="25"
+                              lighting-color="#ffe6c0" result="sheen">
+            <feDistantLight azimuth="315" elevation="50"/>
+          </feSpecularLighting>
+          <feComposite in="sheen" in2="SourceAlpha" operator="in" result="sheenIn"/>
+          <feComposite in="shaded" in2="sheenIn" operator="arithmetic" k2="1" k3="0.35" result="lit"/>
+          <feComposite in="lit" in2="SourceAlpha" operator="in"/>
+        </filter>
+        <!-- Carving: a dark groove floor, a shadow cast by the sunlit edge, and light catching the far wall -->
+        <filter id="carve" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-700" y="-700" width="1400" height="1400">
+          <!-- deep, dark groove floor -->
+          <feFlood flood-color="#0a0402" flood-opacity="0.88"/>
+          <feComposite in2="SourceAlpha" operator="in" result="floor"/>
+          <!-- the sunlit edge casts a long shadow down into the groove -->
+          <feOffset in="SourceAlpha" dx="-3.4" dy="3.4" result="shifted"/>
+          <feComposite in="SourceAlpha" in2="shifted" operator="out" result="shadowEdge"/>
+          <feFlood flood-color="#000"/>
+          <feComposite in2="shadowEdge" operator="in"/>
+          <feGaussianBlur stdDeviation="0.9"/>
+          <feComposite in2="SourceAlpha" operator="in" result="shadow"/>
+          <!-- light catches the far wall of the groove -->
+          <feOffset in="SourceAlpha" dx="1.8" dy="-1.8" result="shifted2"/>
+          <feComposite in="SourceAlpha" in2="shifted2" operator="out" result="lightEdge"/>
+          <feFlood flood-color="#ffd7a0" flood-opacity="0.8"/>
+          <feComposite in2="lightEdge" operator="in" result="light"/>
+          <!-- a bright lip on the wood surface along the sunlit side of the cut -->
+          <feOffset in="SourceAlpha" dx="1.6" dy="-1.6" result="lipShift"/>
+          <feComposite in="lipShift" in2="SourceAlpha" operator="out" result="lipEdge"/>
+          <feFlood flood-color="#ffe2bb" flood-opacity="0.35"/>
+          <feComposite in2="lipEdge" operator="in"/>
+          <feGaussianBlur stdDeviation="0.6" result="lip"/>
+          <!-- a soft shadow on the wood surface along the shaded side of the cut -->
+          <feOffset in="SourceAlpha" dx="-1.4" dy="1.4" result="rimShift"/>
+          <feComposite in="rimShift" in2="SourceAlpha" operator="out" result="rimEdge"/>
+          <feFlood flood-color="#000" flood-opacity="0.45"/>
+          <feComposite in2="rimEdge" operator="in"/>
+          <feGaussianBlur stdDeviation="0.8" result="rim"/>
+          <feMerge>
+            <feMergeNode in="rim"/><feMergeNode in="lip"/>
+            <feMergeNode in="floor"/><feMergeNode in="shadow"/><feMergeNode in="light"/>
+          </feMerge>
+        </filter>`);
+
+      // Wood replaces the white lattice bars.
+      lattice.querySelector('rect[fill="url(#lattice-tile)"]').remove();
+      // The page starts as one solid walnut board. When the lattice arrives, the board fades
+      // away to leave the bevelled lattice bars and the flower panel, revealing the glass.
+      document.body.style.backgroundColor = '#2b1b13';
+      const woodLayer = el('g', {}, svg);
+      el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#walnut)',
+                   mask: 'url(#wood-shape)', filter: 'url(#bevel)' }, woodLayer);
+      const solid = el('rect', { x: -2400, y: -2400, width: 4800, height: 4800, fill: 'url(#walnut)' }, woodLayer);
+      // The logo is carved into the wood as it animates (a live copy of the animated artwork).
+      const carved = el('use', { href: '#logo-art', filter: 'url(#carve)' }, svg);
+      svg.insertBefore(woodLayer, flower);
+      svg.insertBefore(carved, flower);
+      // The plain artwork itself stays hidden; only its carved copy is seen.
+      const plainLogo = el('g', { opacity: 0 }, svg);
+      plainLogo.appendChild(flower);
+      wood = { solid };
+    }
+
+    // The complete, standalone C and S shown at the start. Each one borrows a piece
+    // of the other letter's stroke; that extra piece pulls back as they overlap.
+    const intro = el('g', {}, units[0].unit);
+    const introC = el('path', {}, intro);
+    const introS = el('path', {}, intro);
+
+    // Where the C and S sit when they first appear, upright and side by side.
+    const INTRO = {
+      c: { x: -225, y: 9, rot: -22, scale: 1.0 },
+      s: { x: 194, y: 14, rot: -8, scale: 1.0 },
+    };
+
+    const clamp = (v) => Math.min(1, Math.max(0, v));
+    const progress = (t, [a, b]) => clamp((t - a) / (b - a));
+    // Gentle in-and-out speed curve; it doesn't linger at either end, so overlapping steps blend smoothly.
+    const ease = (p) => (1 - Math.cos(Math.PI * p)) / 2;
+    const lerp = (a, b, p) => a + (b - a) * p;
+
+    // Place a letter so its pivot point lands at (x, y) with the given rotation and scale.
+    function pose(pivot, x, y, rot, scale) {
+      return `translate(${x} ${y}) rotate(${rot}) scale(${scale}) translate(${-pivot[0]} ${-pivot[1]})`;
+    }
+
+    // Outline of a pen stroke running through points pts (flat [x, y, x, y, ...]) with
+    // widths w, drawn from the start up to fractional point index `end`.
+    function strokeOutline(pts, w, end) {
+      const n = Math.floor(end);
+      const P = [], W = [];
+      for (let i = 0; i <= n; i++) { P.push([pts[2 * i], pts[2 * i + 1]]); W.push(w[i]); }
+      const f = end - n;
+      if (f > 0.01 && n + 1 < w.length) {
+        P.push([lerp(pts[2 * n], pts[2 * n + 2], f), lerp(pts[2 * n + 1], pts[2 * n + 3], f)]);
+        W.push(lerp(w[n], w[n + 1], f));
+      }
+      const left = [], right = [];
+      for (let i = 0; i < P.length; i++) {
+        const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)];
+        let tx = b[0] - a[0], ty = b[1] - a[1];
+        const len = Math.hypot(tx, ty) || 1;
+        tx /= len; ty /= len;
+        const h = W[i] / 2;
+        left.push(`${(P[i][0] - ty * h).toFixed(1)} ${(P[i][1] + tx * h).toFixed(1)}`);
+        right.push(`${(P[i][0] + ty * h).toFixed(1)} ${(P[i][1] - tx * h).toFixed(1)}`);
+      }
+      return 'M' + left.join('L') + 'L' + right.reverse().join('L') + 'Z';
+    }
+
+    // The S's final shape differs slightly from its complete shape near the join,
+    // so blend the points and widths as the extra piece retracts.
+    const sPtsNow = LETTERS.sPts.slice();
+    const sWNow = LETTERS.sW.slice();
+    function blendS(p) {
+      for (let i = 0; i <= LETTERS.sFinal; i++) {
+        sPtsNow[2 * i] = lerp(LETTERS.sPts[2 * i], LETTERS.sFinalPts[2 * i], p);
+        sPtsNow[2 * i + 1] = lerp(LETTERS.sPts[2 * i + 1], LETTERS.sFinalPts[2 * i + 1], p);
+        sWNow[i] = lerp(LETTERS.sW[i], LETTERS.sFinalW[i], p);
+      }
+    }
+
+    function render(t) {
+      const pIn = progress(t, T.lettersIn);
+      const pCombine = ease(progress(t, T.combine));
+      const pRetract = ease(progress(t, T.retract));
+      const pMulti = ease(progress(t, T.multiply));
+      const pGaps = progress(t, T.gaps);
+      // The other four copies appear once the first pair has settled into place.
+      const pCopies = progress(t, [T.combine[1], T.combine[1] + 0.3]);
+      const pOutline = ease(progress(t, T.outline));
+
+      // While combining, the C+S pair is centered on screen; as it multiplies,
+      // the whole flower slides so its center ends up in the middle.
+      const shift = 1 - pMulti;
+      const gx = -GEOM.unitCenter[0] * shift;
+      const gy = -GEOM.unitCenter[1] * shift;
+      flower.setAttribute('transform', `translate(${gx} ${gy})`);
+
+      // Until the extra pieces have fully retracted, the first pair is drawn by the
+      // live "intro" letters; afterwards the finished artwork takes over.
+      const introDone = pRetract >= 1 && pCombine >= 1;
+      intro.setAttribute('display', introDone ? 'none' : 'inline');
+      units[0].c.setAttribute('display', introDone ? 'inline' : 'none');
+      units[0].s.setAttribute('display', introDone ? 'inline' : 'none');
+
+      if (!introDone) {
+        const cEnd = lerp(LETTERS.cW.length - 1, LETTERS.cFinal, pRetract);
+        introC.setAttribute('d', strokeOutline(LETTERS.cPts, LETTERS.cW, cEnd));
+        blendS(pRetract);
+        const sEnd = lerp(LETTERS.sW.length - 1, LETTERS.sFinal, pRetract);
+        introS.setAttribute('d', strokeOutline(sPtsNow, sWNow, sEnd));
+
+        const grow = lerp(0.97, 1, pIn);
+        for (const [g, key, pivot] of [[introC, 'c', LETTERS.cCenter], [introS, 's', LETTERS.sCenter]]) {
+          const start = INTRO[key];
+          // Intro positions are given relative to the screen center, so undo the flower shift.
+          const ix = start.x + GEOM.unitCenter[0];
+          const iy = start.y + GEOM.unitCenter[1];
+          g.setAttribute('transform', pose(
+            pivot,
+            lerp(ix, pivot[0], pCombine),
+            lerp(iy, pivot[1], pCombine),
+            lerp(start.rot, 0, pCombine),
+            lerp(start.scale * grow, 1, pCombine),
+          ));
+        }
+      }
+
+      units.forEach(({ unit }, k) => {
+        unit.setAttribute('transform', `rotate(${72 * k * pMulti})`);
+        unit.setAttribute('opacity', k === 0 ? pIn : pCopies);
+      });
+
+      fills.forEach((f) => f.setAttribute('opacity', 1 - pGaps));
+      outline.setAttribute('stroke-dashoffset', 1 - pOutline);
+      // Once fully drawn, drop the dash so the outline's start and end join cleanly.
+      outline.setAttribute('stroke-dasharray', pOutline >= 1 ? 'none' : '1 1');
+      // The outline draws in as a fine line, then thickens to match the lattice bars as the lattice appears.
+      const pLattice = SHOW_GRID ? progress(t, T.lattice) : 0;
+      if (SHOW_GRID) lattice.setAttribute('opacity', pLattice);
+      if (sunlight) {
+        const pSun = ease(progress(t, T.sunlight));
+        for (const layer of sunlight.children) {
+          layer.dataset.full ??= layer.getAttribute('opacity') ?? 1;
+          layer.setAttribute('opacity', layer.dataset.full * pSun);
+        }
+      }
+      if (wood) {
+        // The solid board gives way to the lattice; the carved outline stays fine.
+        wood.solid.setAttribute('opacity', 1 - pLattice);
+      } else {
+        outline.setAttribute('stroke-width', lerp(GEOM.outlineThin, GEOM.outlineWidth, ease(pLattice)));
+      }
+    }
+
+    if (!STAINED_GLASS) delete T.sunlight;
+    const END = Math.max(...Object.values(T).map(([, end]) => end));
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      render(END);
+    } else {
+      const start = performance.now();
+      const tick = (now) => {
+        const t = (now - start) / 1000;
+        render(t);
+        if (t < END) requestAnimationFrame(tick);
+      };
+      render(0);
+      requestAnimationFrame(tick);
+    }
+  </script>
+</body>
+</html>
