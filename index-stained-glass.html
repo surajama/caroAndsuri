@@ -127,6 +127,18 @@
     // Set to false to show the logo on its own, without the paper lattice.
     const SHOW_GRID = true;
 
+    // Lattice proportions. The walnut version has chunkier bars, like the reference wood panels, and a
+    // different grid offset so no tiny slivers of glass are left beside the flower.
+    const CHUNKY_BARS = false;
+    const GRID_SHIFT = CHUNKY_BARS ? 162 : 36;
+    const tilePattern = document.getElementById('lattice-tile');
+    tilePattern.setAttribute('patternTransform', `translate(0 ${GRID_SHIFT}) rotate(45)`);
+    if (CHUNKY_BARS) {
+      // One 170-unit tile: 22 units of bar on each side, opening corners rounded by 18.
+      tilePattern.querySelector('path').setAttribute('d',
+        'M0 0H170V170H0Z M40 22H130Q148 22 148 40V130Q148 148 130 148H40Q22 148 22 130V40Q22 22 40 22Z');
+    }
+
     const lattice = document.getElementById('lattice');
     if (!SHOW_GRID) {
       lattice.remove();
@@ -216,7 +228,7 @@
           <stop offset="1" stop-color="#000" stop-opacity="0.38"/>
         </radialGradient>
         <pattern id="pane-shade" patternUnits="userSpaceOnUse" x="-85" y="-85" width="170" height="170"
-                 patternTransform="translate(0 36) rotate(45)">
+                 patternTransform="translate(0 ${GRID_SHIFT}) rotate(45)">
           <rect width="170" height="170" fill="url(#pane-depth)"/>
         </pattern>
         <radialGradient id="sun-glow" gradientUnits="userSpaceOnUse" cx="1100" cy="-1250" r="2600">
@@ -233,7 +245,7 @@
       // repeatable random colour that never matches the pane beside or above it.
       const glass = el('g', { filter: 'url(#hammered)' }, lattice);
       lattice.insertBefore(glass, latticeRect);
-      const panes = el('g', { transform: 'translate(0 36) rotate(45)' }, glass);
+      const panes = el('g', { transform: `translate(0 ${GRID_SHIFT}) rotate(45)` }, glass);
       let seed = 20260611;
       const random = () => {
         seed = (seed + 0x6d2b79f5) | 0;
@@ -246,7 +258,7 @@
       const R = 2300, n = 20;
       for (let i = -n; i <= n; i++) {
         for (let j = -n; j <= n; j++) {
-          const x = (i - j) * 170 * Math.SQRT1_2, y = (i + j) * 170 * Math.SQRT1_2 + 36;
+          const x = (i - j) * 170 * Math.SQRT1_2, y = (i + j) * 170 * Math.SQRT1_2 + GRID_SHIFT;
           if (Math.abs(x) > R || Math.abs(y) > R) continue;
           let colour;
           do { colour = bag[Math.floor(random() * bag.length)]; }
@@ -315,12 +327,12 @@
         </mask>
         <!-- Softly rounded, bevelled edges lit by the sun from the upper right -->
         <filter id="bevel" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-2400" y="-2400" width="4800" height="4800">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="bump"/>
-          <feDiffuseLighting in="bump" surfaceScale="5" diffuseConstant="1.15" lighting-color="#fff" result="shade">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="7" result="bump"/>
+          <feDiffuseLighting in="bump" surfaceScale="9" diffuseConstant="1.15" lighting-color="#fff" result="shade">
             <feDistantLight azimuth="315" elevation="50"/>
           </feDiffuseLighting>
           <feComposite in="SourceGraphic" in2="shade" operator="arithmetic" k1="1" result="shaded"/>
-          <feSpecularLighting in="bump" surfaceScale="5" specularConstant="0.5" specularExponent="25"
+          <feSpecularLighting in="bump" surfaceScale="9" specularConstant="0.5" specularExponent="25"
                               lighting-color="#ffe6c0" result="sheen">
             <feDistantLight azimuth="315" elevation="50"/>
           </feSpecularLighting>
