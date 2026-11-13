@@ -358,31 +358,6 @@
         wordPanels(page, page.paper, SWATCH.lilac, true);
     }
 
-    // A ring of tiny printed leaves just outside a window, following its edge.
-    function windowRing(shape, colour) {
-      const pts = outline(shape, 15, 720);
-      let length = 0;
-      const seg = pts.map((p, k) => {
-        const q = pts[(k + 1) % pts.length];
-        const l = Math.hypot(q[0] - p[0], q[1] - p[1]);
-        length += l;
-        return l;
-      });
-      const count = Math.max(10, Math.round(length / 26 / 2) * 2);
-      let s = '', walked = 0, next = 0, n = 0;
-      for (let k = 0; k < pts.length && n < count; k++) {
-        if (walked >= next) {
-          const [x, y] = pts[k], [qx, qy] = pts[(k + 1) % pts.length];
-          const tangent = (Math.atan2(qy - y, qx - x) * 180) / Math.PI;
-          s += n % 2 === 0 ? petal(x, y, tangent + 30, 6.5, 2.6, colour) : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="${colour}"/>`;
-          n++;
-          next = (n * length) / count;
-        }
-        walked += seg[k];
-      }
-      return s;
-    }
-
     // The window itself: everything except the shape is paper (alpha mask).
     function windowMask(shape) {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 ${H}" preserveAspectRatio="none">` +
@@ -460,9 +435,8 @@
           : page.border === 'lilies' ? lilyBorder(`lilies-${i}`)
           : corners(page.ink, page.accent);
         if (page.window) {
-          // the white core of the card showing at the cut edge, then (on plain cards) the printed leaf ring
+          // the white core of the card showing at the cut edge
           art += `<path d="${toPath(outline(page.window))}" fill="none" stroke="#fffaf0" stroke-opacity="0.85" stroke-width="6"/>`;
-          if (!page.pattern) art += windowRing(page.window, page.accent);
         }
 
         paper.innerHTML = `
