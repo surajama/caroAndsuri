@@ -15,11 +15,13 @@ ROOT = HERE.parent.parent
 
 # Output file -> feature flags
 VARIANTS = {
-    'index.html':                {'SHOW_GRID': 'true',  'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
-    'index-no-grid.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
-    'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
-    'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
-    'index-glass-panel.html':    {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true'},
+    'index.html':                {'SHOW_GRID': 'true',  'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949'},
+    'index-no-grid.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949'},
+    'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949'},
+    'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949'},
+    'index-glass-panel.html':    {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true', 'FLOWER_FILL': '#e9b949'},
+    'index-glass-panel-lavender.html':
+                                 {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true', 'FLOWER_FILL': '#b4a5cc'},
 }
 
 geom = json.dumps(json.loads((HERE / 'geom.json').read_text()),
