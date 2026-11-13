@@ -89,20 +89,13 @@
       position: absolute;
       left: 10%;
       right: 10%;
-      top: 58.5%;
+      top: 71%;
       text-align: center;
       line-height: 1.25;
     }
 
-    .invite-line {
-      font-style: italic;
-      font-size: 3.5cqw;
-      opacity: 0.85;
-    }
-
     .event {
-      margin-top: 1.2cqw;
-      font-size: 4.3cqw;
+      font-size: 4.6cqw;
       font-weight: 600;
       letter-spacing: 0.11em;
       white-space: nowrap;
@@ -116,11 +109,6 @@
       margin: 1.6cqw auto 1.4cqw;
     }
 
-    .details {
-      font-size: 3.3cqw;
-      letter-spacing: 0.04em;
-    }
-
     .names {
       position: absolute;
       left: 0;
@@ -131,6 +119,12 @@
       font-weight: 500;
       letter-spacing: 0.3em;
       text-transform: uppercase;
+    }
+
+    .names.cover {
+      top: 83%;
+      font-size: 4.3cqw;
+      letter-spacing: 0.22em;
     }
 
     .nav {
@@ -174,21 +168,25 @@
     // ---------------------------------------------------------------------------------------
     // The five sheets, top to bottom. Each sheet's window (cut-out) is smaller than the one
     // above, so together they build a layered mandala; the outermost window is the flower logo.
-    // Wording other than the event names is placeholder until the details are confirmed.
+    // Sheet 0 is the cover; each later sheet is one event.
     // ---------------------------------------------------------------------------------------
     const NAMES = 'Caroline & Suraj';
+    // Colours are sampled from the glass circles of the stained-glass wall:
+    // cobalt #0f2f8a, emerald #1f8a5c, pearl #f1e4cc, marigold #e47a17, ruby #4d0a04,
+    // sea glass #aec5bf, honey gold #f8c84e, champagne #f7ecd6.
     const SHEETS = [
-      { event: 'Mehendi & Welcome Party', paper: '#ecd2d0', ink: '#3f5f49', accent: '#b4566c', window: 'flower' },
-      { event: 'Wedding Ceremony',        paper: '#e9b949', ink: '#553810', accent: '#fff7e6', window: 'rosette' },
-      // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
-      { event: 'Reception',               paper: '#3a2a1c', ink: '#f7ecd6', accent: '#e9b949', window: 'star',
-        photo: { src: 'ceiling.jpg', size: '182.8% auto', position: '46.79% 59.77%' } },
-      { event: 'Pheras',                  paper: '#3e5c48', ink: '#f4e8d0', accent: '#e9b949', window: 'smallFlower' },
-      { event: 'Reception & Sangeet',     paper: '#f4ecdc', ink: '#3f5f49', accent: '#e9b949', window: null },
+      { event: null,                      paper: '#0f2f8a', ink: '#f7ecd6', accent: '#f8c84e', window: 'flower' },
+      { event: 'Mehendi & Welcome Party', paper: '#1f8a5c', ink: '#f7ecd6', accent: '#f8c84e', window: 'rosette' },
+      { event: 'Wedding Ceremony',        paper: '#f1e4cc', ink: '#0f2f8a', accent: '#e47a17', window: 'star' },
+      // Printed with the venue ceiling; its twelve-sided gilded rosette frames this card's twelve-sided window.
+      { event: 'Reception',               paper: '#3a2a1c', ink: '#f7ecd6', accent: '#f8c84e', window: 'dodecagon',
+        photo: { src: 'ceiling.jpg', size: '119.6% auto', position: '41.12% 65.22%' } },
+      { event: 'Pheras',                  paper: '#e47a17', ink: '#4d0a04', accent: '#faf3e2', window: 'smallFlower' },
+      { event: 'Reception & Sangeet',     paper: '#aec5bf', ink: '#0f2f8a', accent: '#f8c84e', window: null },
     ];
 
     // Page coordinates are 0..1000 on each side; the mandala is centred here.
-    const CX = 500, CY = 345;
+    const CX = 500, CY = 400;
 
     // ---- Shapes, as radius-by-angle functions (angles in degrees, 0 = right, clockwise) ----
     const rad = (deg) => (deg * Math.PI) / 180;
@@ -206,13 +204,15 @@
       return d * Math.cos(a) + Math.sqrt(R * R - (d * Math.sin(a)) ** 2);
     };
     const SHAPES = {
-      flower: flowerR(208),
+      flower: flowerR(255),
       // Ten soft scallops, the larger ones pointing into the flower's petals.
-      rosette: (deg) => 126 + 18 * Math.abs(Math.cos(rad(5 * (deg + 90)))),
+      rosette: (deg) => 156 + 22 * Math.abs(Math.cos(rad(5 * (deg + 90)))),
       // Five pointed arches, tips pointing into the petals.
-      star: (deg) => 100 * (0.66 + 0.34 * Math.pow(1 - Math.abs(nearest(deg, -90, 5)) / 36, 1.7)),
+      star: (deg) => 124 * (0.66 + 0.34 * Math.pow(1 - Math.abs(nearest(deg, -90, 5)) / 36, 1.7)),
+      // Twelve sides, echoing the gilded rosette at the heart of the venue ceiling.
+      dodecagon: (deg) => (74 * Math.cos(rad(15))) / Math.cos(rad(nearest(deg, -75, 12))),
       // A small flower, turned to sit between the star's points.
-      smallFlower: flowerR(63, 36),
+      smallFlower: flowerR(54, 36),
     };
 
     function outline(shape, offset = 0, steps = 360) {
@@ -362,7 +362,7 @@
         art += windowRing(page.window, page.accent);
       } else {
         // the very centre of the mandala: a tiny golden flower
-        const tiny = (deg) => flowerR(37, 0)(deg);
+        const tiny = (deg) => flowerR(30, 0)(deg);
         SHAPES.tiny = tiny;
         art += `<path d="${toPath(outline('tiny'))}" fill="#e9b949" stroke="#fffaf0" stroke-width="3"/>`;
         art += windowRing('tiny', page.ink);
@@ -370,17 +370,15 @@
 
       paper.innerHTML = `
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">${art}</svg>
-        <div class="words">
-          <div class="invite-line">please join us for the</div>
+        ${page.event ? `<div class="words">
           <div class="event">${page.event}</div>
           <svg class="flourish" viewBox="0 0 220 30" aria-hidden="true">
             <path d="M8 15 H86 M134 15 H212" stroke="currentColor" stroke-width="1.4"/>
             ${smallBloom(110, 15, 9, page.accent, page.ink)}
             <circle cx="96" cy="15" r="2.4" fill="currentColor"/><circle cx="124" cy="15" r="2.4" fill="currentColor"/>
           </svg>
-          <div class="details">Date &amp; time to be announced<br>Venue to be announced</div>
-        </div>
-        <div class="names">${NAMES}</div>`;
+        </div>` : ''}
+        <div class="names${page.event ? '' : ' cover'}">${NAMES}</div>`;
 
       sheet.appendChild(paper);
       book.appendChild(sheet);
