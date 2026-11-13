@@ -54,16 +54,16 @@
       50%      { transform: translate(55px, -30px); }
     }
 
-    /* Photo background version: the stained-glass wood panel photo. Tall screens crop it to fill;
-       wide screens show the panel at full height, repeated side by side like a wall of panels. */
+    /* Photo background version: the stained-glass wood panel photo, zoomed in so the glass circles
+       are large. Tall screens size it by width, wide screens by height; it repeats if needed. */
     body.photo-background {
-      background: #4a2c1a url('glass-panel.jpg') center / cover no-repeat;
+      --bg-zoom: 2.5;
+      background: #4a2c1a url('glass-panel.jpg') center / calc(100% * var(--bg-zoom)) auto repeat;
     }
 
-    @media (min-aspect-ratio: 485/1000) {
+    @media (min-aspect-ratio: 485/1234) {
       body.photo-background {
-        background-size: auto 100%;
-        background-repeat: repeat-x;
+        background-size: auto calc(100% * var(--bg-zoom));
       }
     }
 
