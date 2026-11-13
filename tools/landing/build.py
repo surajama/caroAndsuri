@@ -18,9 +18,12 @@ ROOT = HERE.parent.parent
 GLASS_WALL = json.dumps({  # 8x8 tile wall; centre = junction of the middle four tiles of a 4x4 block
     'image': "url('glass-wall.jpg')", 'colour': '#8a5d3b', 'repeat': 'repeat',
     'scale': '2.062', 'aspect': str(1160 / 1136), 'cx': '0.4946', 'cy': '0.5033'})
-CEILING = json.dumps({  # venue ceiling, cropped centred on its twelve-pointed star; petals reach just past the gilded rosette
-    'image': "url('ceiling.jpg')", 'colour': '#3a2a1c', 'repeat': 'no-repeat',
-    'scale': '4.16', 'aspect': str(2800 / 2400), 'cx': '0.5', 'cy': '0.5'})
+CEILING = json.dumps({  # whole venue ceiling photo; centre = its twelve-pointed star (found by 12-fold symmetry).
+    # Like Caroline's mockup: the flower spans ~0.435 of the photo's width, and the logo is capped at 37% of the
+    # screen height so the photo's full height shows; wider screens get the mockup's cream either side.
+    'image': "url('ceiling.jpg')", 'colour': '#edefe3', 'repeat': 'no-repeat',
+    'scale': '2.02', 'aspect': str(4032 / 3024), 'cx': str(1468 / 3024), 'cy': str(1992 / 4032),
+    'logo-size': 'min(88vw, 37dvh)'})
 
 # Output file -> feature flags
 VARIANTS = {

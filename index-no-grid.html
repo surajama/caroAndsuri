@@ -169,7 +169,11 @@
       document.body.style.setProperty('--flower-fill', '#e9b949');
       document.body.style.setProperty('--outline-colour', '#fff');
       const BACKGROUND = {};
-      for (const [key, value] of Object.entries(BACKGROUND)) document.body.style.setProperty(`--bg-${key}`, value);
+      for (const [key, value] of Object.entries(BACKGROUND)) {
+        // 'logo-size' overrides how big the logo is on screen; everything else styles the photo.
+        if (key === 'logo-size') document.documentElement.style.setProperty('--logo-size', value);
+        else document.body.style.setProperty(`--bg-${key}`, value);
+      }
       medallion = el('g', { opacity: 0 }, svg);
       el('path', { d: GEOM.holePath, class: 'flower-fill' }, medallion);
       if (OUTLINE_FROM_START) {

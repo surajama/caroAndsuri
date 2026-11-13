@@ -168,8 +168,12 @@
       document.body.classList.add('photo-background');
       document.body.style.setProperty('--flower-fill', '#e9b949');
       document.body.style.setProperty('--outline-colour', '#fff');
-      const BACKGROUND = {"image": "url('ceiling.jpg')", "colour": "#3a2a1c", "repeat": "no-repeat", "scale": "4.16", "aspect": "1.1666666666666667", "cx": "0.5", "cy": "0.5"};
-      for (const [key, value] of Object.entries(BACKGROUND)) document.body.style.setProperty(`--bg-${key}`, value);
+      const BACKGROUND = {"image": "url('ceiling.jpg')", "colour": "#edefe3", "repeat": "no-repeat", "scale": "2.02", "aspect": "1.3333333333333333", "cx": "0.48544973544973546", "cy": "0.49404761904761907", "logo-size": "min(88vw, 37dvh)"};
+      for (const [key, value] of Object.entries(BACKGROUND)) {
+        // 'logo-size' overrides how big the logo is on screen; everything else styles the photo.
+        if (key === 'logo-size') document.documentElement.style.setProperty('--logo-size', value);
+        else document.body.style.setProperty(`--bg-${key}`, value);
+      }
       medallion = el('g', { opacity: 0 }, svg);
       el('path', { d: GEOM.holePath, class: 'flower-fill' }, medallion);
       if (OUTLINE_FROM_START) {
