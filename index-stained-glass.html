@@ -26,9 +26,13 @@
       background-color: #000;
     }
 
+    :root {
+      --logo-size: min(88vw, 82dvh);
+    }
+
     #logo {
-      width: min(88vw, 82dvh);
-      height: min(88vw, 82dvh);
+      width: var(--logo-size);
+      height: var(--logo-size);
       overflow: visible;
     }
 
@@ -56,16 +60,16 @@
       50%      { transform: translate(55px, -30px); }
     }
 
-    /* Photo background version: the stained-glass wall (8 x 8 tiles, cleaned up from a photo),
-       zoomed so a few rows fill the screen. It is cropped on the tile grid, so it repeats seamlessly. */
+    /* Photo background version: the stained-glass wall photo (glass-wall.jpg, 1136 x 1160 px, cropped on
+       the tile grid so it repeats seamlessly). It is sized from the logo so the flower always spans
+       about 3.4 tiles, and positioned so the flower's centre sits exactly where the middle four tiles
+       of a 4 x 4 block meet (measured from the circle centres at 0.4946, 0.5033 of the image). */
     body.photo-background {
-      --bg-zoom: 1.8;
-      background: #8a5d3b url('glass-wall.jpg') center / auto calc(100% * var(--bg-zoom)) repeat;
-    }
-
-    /* Tall, narrow screens (phones): size by width instead, about three tiles across. */
-    @media (max-aspect-ratio: 3/4) {
-      body.photo-background { background-size: 260% auto; }
+      --bg-w: calc(var(--logo-size) * 2.062);
+      --bg-h: calc(var(--bg-w) * 1160 / 1136);
+      background: #8a5d3b url('glass-wall.jpg') repeat;
+      background-size: var(--bg-w) var(--bg-h);
+      background-position: calc(50vw - var(--bg-w) * 0.4946) calc(50dvh - var(--bg-h) * 0.5033);
     }
 
     #logo .outline {
