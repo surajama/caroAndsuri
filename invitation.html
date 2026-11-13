@@ -89,7 +89,7 @@
       position: absolute;
       left: 10%;
       right: 10%;
-      top: 71%;
+      top: 74%;
       text-align: center;
       line-height: 1.25;
     }
@@ -378,7 +378,7 @@
             <circle cx="96" cy="15" r="2.4" fill="currentColor"/><circle cx="124" cy="15" r="2.4" fill="currentColor"/>
           </svg>
         </div>` : ''}
-        <div class="names${page.event ? '' : ' cover'}">${NAMES}</div>`;
+        ${page.event ? '' : `<div class="names cover">${NAMES}</div>`}`;
 
       sheet.appendChild(paper);
       book.appendChild(sheet);
