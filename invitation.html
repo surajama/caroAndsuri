@@ -184,7 +184,9 @@
       // Printed all over with Caroline's Mughal floral trellis (recoloured) instead of the border and sprigs.
       { event: 'Mehendi', venue: 'Faena River Club',
         paper: SWATCH.burgundy, ink: SWATCH.cream, accent: SWATCH.cream, window: 'mehendiFrame', pattern: 'trellis' },
-      { event: 'Wedding Ceremony', venue: 'Casa de Pilatos', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon' },
+      // Two flowering sprigs, little pixel crosses and a column of diamonds, placed as on the Mehendi reference card.
+      { event: 'Wedding Ceremony', venue: 'Casa de Pilatos', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon',
+        prints: 'sprigsAndPixels' },
       // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
       // Words in blue oval panels, no corner sprigs.
       { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, window: 'fountain',
@@ -337,6 +339,88 @@
         <rect x="${band}" y="${band}" width="${1000 - 2 * band}" height="${H - 2 * band}" fill="none" stroke="${SWATCH.cream}" stroke-width="3"/>`;
     }
 
+    // ---- Small printed motifs from the Mehendi reference card: Mughal flower sprigs, pixel crosses, diamonds ----
+    // A flowering sprig centred on (0, 0), about 200 wide and 235 tall: an open flower on top, two side flowers in
+    // profile, two drooping buds and two pairs of leaves. Petals burgundy, highlights lilac, greenery olive.
+    function mughalSprig() {
+      const { burgundy, lilac, olive, brown, cream } = SWATCH;
+      const leaf = (x, y, angle, len, wid) =>
+        `<g transform="translate(${x} ${y}) rotate(${angle})">
+          <path d="M0 0 C ${len * 0.3} ${-wid}, ${len * 0.75} ${-wid}, ${len} 0 C ${len * 0.75} ${wid * 0.9}, ${len * 0.3} ${wid * 0.9}, 0 0 Z" fill="${olive}"/>
+          <path d="M${len * 0.08} 0 L ${len * 0.85} 0" stroke="${brown}" stroke-width="1.6" stroke-linecap="round"/>
+        </g>`;
+      // a side flower in profile: a cup of petals opening upward and outward
+      const sideFlower = (x, y, angle) =>
+        `<g transform="translate(${x} ${y}) rotate(${angle})">
+          <path d="M-4 14 C -10 8, -11 2, -8 -2 L 8 -2 C 11 2, 10 8, 4 14 Z" fill="${olive}"/>
+          <path d="M-17 -2 C -19 -14, -12 -24, -6 -22 C -4 -30, 4 -30, 6 -22 C 12 -24, 19 -14, 17 -2 C 10 6, -10 6, -17 -2 Z" fill="${burgundy}"/>
+          <path d="M-9 -4 C -10 -12, -5 -17, 0 -15 C 5 -17, 10 -12, 9 -4 C 5 0, -5 0, -9 -4 Z" fill="${lilac}"/>
+          <path d="M-6 -22 L -8 -28 M 0 -24 L 0 -31 M 6 -22 L 8 -28" stroke="${burgundy}" stroke-width="2.4" stroke-linecap="round"/>
+        </g>`;
+      // a small drooping bud with its sepals
+      const bud = (x, y, angle) =>
+        `<g transform="translate(${x} ${y}) rotate(${angle})">
+          <path d="M0 -6 C -9 -2, -9 12, 0 18 C 9 12, 9 -2, 0 -6 Z" fill="${lilac}"/>
+          <path d="M-6 -3 L 0 -10 L 6 -3 C 3 0, -3 0, -6 -3 Z" fill="${olive}"/>
+          <path d="M0 2 L 0 14" stroke="${burgundy}" stroke-width="1.6" stroke-linecap="round"/>
+        </g>`;
+      let s = `<g fill="none" stroke="${olive}" stroke-width="4" stroke-linecap="round">
+        <path d="M0 118 C 1 70, -1 10, 0 -58"/>
+        <path d="M0 6 C -16 -4, -34 -12, -50 -20"/><path d="M0 6 C 16 -4, 34 -12, 50 -20"/>
+        <path d="M0 52 C -20 40, -46 30, -62 34"/><path d="M0 52 C 20 40, 46 30, 62 34"/>
+      </g>`;
+      s += leaf(-4, 14, -150, 46, 14) + leaf(4, 14, -30, 46, 14);
+      s += leaf(-3, 100, -165, 60, 16) + leaf(3, 100, -15, 60, 16);
+      s += sideFlower(-58, -24, -32) + sideFlower(58, -24, 32);
+      s += bud(-66, 40, 18) + bud(66, 40, -18);
+      // the open flower: an outer ring of burgundy petals, an inner ring of lilac petals and a dotted cream centre
+      let flower = '';
+      for (let k = 0; k < 10; k++) {
+        const a = k * 36, x = Math.cos(rad(a)) * 23, y = Math.sin(rad(a)) * 23;
+        flower += petal(x, y, a, 15, 10, burgundy);
+      }
+      for (let k = 0; k < 8; k++) {
+        const a = k * 45 + 22, x = Math.cos(rad(a)) * 12, y = Math.sin(rad(a)) * 12;
+        flower += petal(x, y, a, 9, 6, lilac);
+      }
+      flower += `<circle r="7" fill="${cream}"/>`;
+      for (let k = 0; k < 8; k++) flower += `<circle cx="${(Math.cos(rad(k * 45)) * 7.5).toFixed(1)}" cy="${(Math.sin(rad(k * 45)) * 7.5).toFixed(1)}" r="1.6" fill="${burgundy}"/>`;
+      s += `<g transform="translate(0 -84)">${flower}</g>`;
+      return s;
+    }
+
+    // A pixel cross: four little squares round a darker centre square.
+    const pixelCross = (x, y) => {
+      const u = 8;
+      return [[0, -1], [1, 0], [0, 1], [-1, 0]].map(([dx, dy]) =>
+          `<rect x="${x + dx * u - u / 2}" y="${y + dy * u - u / 2}" width="${u}" height="${u}" fill="${SWATCH.lilac}"/>`).join('') +
+        `<rect x="${x - u / 2}" y="${y - u / 2}" width="${u}" height="${u}" fill="${SWATCH.burgundy}"/>`;
+    };
+
+    // A column of small diamonds, touching tip to tip.
+    const diamondColumn = (x, top, count) => Array.from({ length: count }, (_, k) => {
+      const y = top + k * 14;
+      return `<path d="M${x} ${y - 7} L ${x + 6} ${y} L ${x} ${y + 7} L ${x - 6} ${y} Z" fill="${SWATCH.lilac}"/>`;
+    }).join('');
+
+    // Placed as on the reference card (positions as fractions of a square card). Motifs in the top third keep
+    // their distance from the top edge, those in the bottom third from the bottom edge, so taller phone cards
+    // spread them out rather than stretching them.
+    function referencePrints() {
+      const at = (fy) => (fy < 0.35 ? fy * 1000 : fy > 0.65 ? H - (1 - fy) * 1000 : fy * H);
+      const sprig = mughalSprig();
+      let s = '';
+      // (the upper sprig sits a little further left than on the reference, clear of the longer title)
+      for (const [fx, fy] of [[0.13, 0.215], [0.787, 0.667]]) {
+        s += `<g transform="translate(${fx * 1000} ${at(fy)}) scale(0.55)">${sprig}</g>`;
+      }
+      for (const [fx, fy] of [[0.362, 0.074], [0.865, 0.242], [0.067, 0.307], [0.164, 0.503], [0.675, 0.78]]) {
+        s += pixelCross(fx * 1000, at(fy));
+      }
+      s += diamondColumn(936, 68, 11);
+      return s;
+    }
+
     // Oval panels behind the event title and the venue (and a matching panel around the window when asked),
     // like little printed labels, so the words read clearly over a pattern or photo.
     function wordPanels(page, fill, edge, aroundWindow) {
@@ -433,6 +517,7 @@
         let art = page.pattern ? patternArt(page, `trellis-${i}`)
           : page.panels ? wordPanels(page, page.panels.fill, page.panels.edge, false)
           : page.border === 'lilies' ? lilyBorder(`lilies-${i}`)
+          : page.prints === 'sprigsAndPixels' ? referencePrints()
           : corners(page.ink, page.accent);
 
         paper.innerHTML = `
