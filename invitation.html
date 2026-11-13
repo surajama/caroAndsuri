@@ -102,13 +102,6 @@
       text-transform: uppercase;
     }
 
-    .flourish {
-      display: block;
-      width: 22cqw;
-      height: 3cqw;
-      margin: 1.6cqw auto 1.4cqw;
-    }
-
     .venue {
       position: absolute;
       left: 0;
@@ -293,32 +286,6 @@
       return s + `<circle cx="${x}" cy="${y}" r="${size * 0.22}" fill="${centreFill}"/>`;
     }
 
-    // Ornamental border: a band between two fine rules, filled with little blooms and diamonds.
-    function border(ink, accent) {
-      const o = 36, i = 76, mid = (o + i) / 2;
-      let s = `<g fill="none" stroke="${ink}" stroke-width="2.2">
-        <rect x="${o}" y="${o}" width="${1000 - 2 * o}" height="${H - 2 * o}"/>
-        <rect x="${i}" y="${i}" width="${1000 - 2 * i}" height="${H - 2 * i}"/>
-        <rect x="${o + 5}" y="${o + 5}" width="${1000 - 2 * o - 10}" height="${H - 2 * o - 10}" stroke-width="0.8"/>
-        <rect x="${i - 5}" y="${i - 5}" width="${1000 - 2 * i + 10}" height="${H - 2 * i + 10}" stroke-width="0.8"/>
-      </g>`;
-      const motif = (x, y, k) => k % 2 === 0
-        ? smallBloom(x, y, 7.5, ink, accent)
-        : `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" transform="rotate(45 ${x} ${y})" fill="${accent}"/>`;
-      // evenly spaced motifs along a run of the band, centred on it
-      const along = (length, centre) => {
-        const count = Math.floor((length - 2 * i) / 31);
-        const step = (length - 2 * i) / count;
-        return Array.from({ length: count }, (_, k) => centre - ((count - 1) * step) / 2 + k * step);
-      };
-      along(1000, 500).forEach((x, k) => { s += motif(x, mid, k) + motif(x, H - mid, k); });
-      along(H, H / 2).forEach((y, k) => { s += motif(mid, y, k) + motif(1000 - mid, y, k); });
-      for (const [x, y] of [[mid, mid], [1000 - mid, mid], [mid, H - mid], [1000 - mid, H - mid]]) {
-        s += `<rect x="${x - 15}" y="${y - 15}" width="30" height="30" fill="${ink}"/>` + smallBloom(x, y, 10, accent, ink);
-      }
-      return s;
-    }
-
     // A little flowering sprig for each inner corner.
     function sprig(ink, accent) {
       let s = `<path d="M0 0 C 30 8, 52 26, 64 58 M18 6 C 26 -10, 44 -14, 58 -8 M34 22 C 50 18, 66 24, 76 36"
@@ -460,7 +427,7 @@
           paper.style.maskSize = paper.style.webkitMaskSize = '100% 100%';
         }
 
-        let art = page.pattern ? patternArt(page, `trellis-${i}`) : border(page.ink, page.accent) + corners(page.ink, page.accent);
+        let art = page.pattern ? patternArt(page, `trellis-${i}`) : corners(page.ink, page.accent);
         if (page.window) {
           // the white core of the card showing at the cut edge, then (on plain cards) the printed leaf ring
           art += `<path d="${toPath(outline(page.window))}" fill="none" stroke="#fffaf0" stroke-opacity="0.85" stroke-width="6"/>`;
@@ -471,11 +438,6 @@
           <svg viewBox="0 0 1000 ${H}" preserveAspectRatio="none" aria-hidden="true">${art}</svg>
           ${page.event ? `<div class="words" style="top:${(185 / H) * 100}%">
             <div class="event">${page.event}</div>
-            ${page.pattern ? '' : `<svg class="flourish" viewBox="0 0 220 30" aria-hidden="true">
-              <path d="M8 15 H86 M134 15 H212" stroke="currentColor" stroke-width="1.4"/>
-              ${smallBloom(110, 15, 9, page.accent, page.ink)}
-              <circle cx="96" cy="15" r="2.4" fill="currentColor"/><circle cx="124" cy="15" r="2.4" fill="currentColor"/>
-            </svg>`}
           </div>` : ''}
           ${page.venue ? `<div class="venue" style="top:${((H - 215) / H) * 100}%">${page.venue}</div>` : ''}
           ${page.event ? '' : `<div class="names cover" style="top:${((H - 160) / H) * 100}%">${NAMES}</div>`}`;
