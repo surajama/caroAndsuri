@@ -109,6 +109,13 @@
       margin: 1.6cqw auto 1.4cqw;
     }
 
+    .venue {
+      font-size: 2.8cqw;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.92;
+    }
+
     .names {
       position: absolute;
       left: 0;
@@ -171,19 +178,23 @@
     // Sheet 0 is the cover; each later sheet is one event.
     // ---------------------------------------------------------------------------------------
     const NAMES = 'Caroline & Suraj';
-    // Colours are sampled from the glass circles of the stained-glass wall:
-    // cobalt #0f2f8a, emerald #1f8a5c, pearl #f1e4cc, marigold #e47a17, ruby #4d0a04,
-    // sea glass #aec5bf, honey gold #f8c84e, champagne #f7ecd6.
+    // Colours from Caroline's swatch card: olive #858248, lilac #937C91, blue #8494A1,
+    // cream #D7CFBE, burgundy #491B12, dark brown #2D2011.
+    const SWATCH = { olive: '#858248', lilac: '#937C91', blue: '#8494A1', cream: '#D7CFBE', burgundy: '#491B12', brown: '#2D2011' };
     const SHEETS = [
-      { event: null,                      paper: '#0f2f8a', ink: '#f7ecd6', accent: '#f8c84e', window: 'flower' },
-      { event: 'Mehendi & Welcome Party', paper: '#1f8a5c', ink: '#f7ecd6', accent: '#f8c84e', window: 'rosette' },
-      { event: 'Wedding Ceremony',        paper: '#f1e4cc', ink: '#0f2f8a', accent: '#e47a17', window: 'star' },
-      // Printed with the venue ceiling; its twelve-sided gilded rosette frames this card's twelve-sided window.
-      { event: 'Reception',               paper: '#3a2a1c', ink: '#f7ecd6', accent: '#f8c84e', window: 'dodecagon',
-        photo: { src: 'ceiling.jpg', size: '119.6% auto', position: '41.12% 65.22%' } },
-      { event: 'Pheras',                  paper: '#e47a17', ink: '#4d0a04', accent: '#faf3e2', window: 'smallFlower' },
-      { event: 'Reception & Sangeet',     paper: '#aec5bf', ink: '#0f2f8a', accent: '#f8c84e', window: null },
+      { event: null, paper: SWATCH.cream, ink: SWATCH.lilac, accent: SWATCH.lilac, window: 'flower' },
+      { event: 'Mehendi & Welcome Party', venue: 'Faena River Club',
+        paper: SWATCH.burgundy, ink: SWATCH.cream, accent: SWATCH.cream, window: 'mehendiFrame' },
+      { event: 'Wedding Ceremony', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon' },
+      // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
+      { event: 'Reception', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, window: 'fountain',
+        photo: { src: 'ceiling.jpg', size: '103% auto', position: '0.0% 74.6%' } },
+      { event: 'Pheras', venue: 'Hacienda Villanueva del Pitamo',
+        paper: SWATCH.olive, ink: SWATCH.cream, accent: SWATCH.cream, window: 'square' },
+      { event: 'Reception & Sangeet', paper: SWATCH.blue, ink: SWATCH.burgundy, accent: SWATCH.burgundy, window: 'weddingQuatrefoil' },
     ];
+    // The back of the invitation, seen through the last card's window.
+    const BACK = { paper: SWATCH.brown, flower: SWATCH.cream };
 
     // Page coordinates are 0..1000 on each side; the mandala is centred here.
     const CX = 500, CY = 400;
@@ -204,15 +215,32 @@
       return d * Math.cos(a) + Math.sqrt(R * R - (d * Math.sin(a)) ** 2);
     };
     const SHAPES = {
+      // Card 0: the logo's flower.
       flower: flowerR(255),
-      // Ten soft scallops, the larger ones pointing into the flower's petals.
-      rosette: (deg) => 156 + 22 * Math.abs(Math.cos(rad(5 * (deg + 90)))),
-      // Five pointed arches, tips pointing into the petals.
-      star: (deg) => 124 * (0.66 + 0.34 * Math.pow(1 - Math.abs(nearest(deg, -90, 5)) / 36, 1.7)),
-      // Twelve sides, echoing the gilded rosette at the heart of the venue ceiling.
-      dodecagon: (deg) => (74 * Math.cos(rad(15))) / Math.cos(rad(nearest(deg, -75, 12))),
-      // A small flower, turned to sit between the star's points.
-      smallFlower: flowerR(54, 36),
+      // Card 1: the outer frame of the Mehendi invitation's mandala: flat sides with small stepped
+      // notches at their ends, and scalloped curves around each corner.
+      mehendiFrame: (deg) => {
+        const a = 184, d = Math.abs(nearest(deg, 0, 4));
+        if (d <= 15) return a / Math.cos(rad(d));
+        if (d <= 18.5) return (0.935 * a) / Math.cos(rad(d));
+        return a * (0.985 + 0.07 * Math.pow(Math.sin((Math.PI * (d - 18.5)) / 26.5), 0.6));
+      },
+      // Card 2: the octagonal fountain plaza at the centre of the Casa de Pilatos garden.
+      gardenOctagon: (deg) => (148 / Math.cos(rad(nearest(deg, -90, 8)))),
+      // Card 3: the courtyard fountain basin: a square with a rounded lobe bulging from each side.
+      fountain: (deg) => {
+        const s = 86, lobe = 40, d = rad(Math.abs(nearest(deg, 0, 4)));
+        const square = s / Math.cos(d);
+        const arc = s * Math.sin(d) <= lobe ? s * Math.cos(d) + Math.sqrt(lobe * lobe - (s * Math.sin(d)) ** 2) : 0;
+        return Math.max(square, arc);
+      },
+      // Card 4: a square.
+      square: (deg) => 64 / Math.cos(rad(nearest(deg, 0, 4))),
+      // Card 5: the Wedding invitation's window: four pointed arch tips with soft curves between.
+      weddingQuatrefoil: (deg) => {
+        const R = 58, f = Math.abs(nearest(deg, -90, 4)) / 45;
+        return R * (1 - 0.42 * Math.pow(f, 0.55) + 0.1 * Math.pow(Math.sin(Math.PI * f), 1.5));
+      },
     };
 
     function outline(shape, offset = 0, steps = 360) {
@@ -330,6 +358,16 @@
     // ---- Build the sheets ----
     const book = document.getElementById('book');
     const dots = document.getElementById('dots');
+    // The back of the invitation: dark board with a tiny flower at the centre of the mandala.
+    SHAPES.backFlower = flowerR(30);
+    const back = document.createElement('div');
+    back.className = 'sheet back';
+    back.innerHTML = `<div class="paper" style="--paper:${BACK.paper}; background-image:${GRAIN}">
+      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path d="${toPath(outline('backFlower'))}" fill="${BACK.flower}"/>
+      </svg></div>`;
+    book.appendChild(back);
+
     const sheets = SHEETS.map((page, i) => {
       const sheet = document.createElement('div');
       sheet.className = 'sheet';
@@ -360,12 +398,6 @@
         // the white core of the card showing at the cut edge, then the printed leaf ring
         art += `<path d="${toPath(outline(page.window))}" fill="none" stroke="#fffaf0" stroke-opacity="0.85" stroke-width="6"/>`;
         art += windowRing(page.window, page.accent);
-      } else {
-        // the very centre of the mandala: a tiny golden flower
-        const tiny = (deg) => flowerR(30, 0)(deg);
-        SHAPES.tiny = tiny;
-        art += `<path d="${toPath(outline('tiny'))}" fill="#e9b949" stroke="#fffaf0" stroke-width="3"/>`;
-        art += windowRing('tiny', page.ink);
       }
 
       paper.innerHTML = `
@@ -377,6 +409,7 @@
             ${smallBloom(110, 15, 9, page.accent, page.ink)}
             <circle cx="96" cy="15" r="2.4" fill="currentColor"/><circle cx="124" cy="15" r="2.4" fill="currentColor"/>
           </svg>
+          ${page.venue ? `<div class="venue">${page.venue}</div>` : ''}
         </div>` : ''}
         ${page.event ? '' : `<div class="names cover">${NAMES}</div>`}`;
 
