@@ -15,11 +15,13 @@ ROOT = HERE.parent.parent
 
 # Output file -> feature flags
 VARIANTS = {
-    'index.html':                {'SHOW_GRID': 'true',  'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false'},
-    'index-no-grid.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false'},
-    'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false'},
-    'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false'},
-    'index-glass-panel.html':    {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true'},
+    'index.html':                {'SHOW_GRID': 'true',  'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
+    'index-no-grid.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
+    'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
+    'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false'},
+    'index-glass-panel.html':    {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'false'},
+    'index-glass-panel-outline-first.html':
+                                 {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true'},
 }
 
 geom = json.dumps(json.loads((HERE / 'geom.json').read_text()),

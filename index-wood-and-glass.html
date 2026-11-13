@@ -38,7 +38,7 @@
     #logo #lattice-tile path { fill: var(--lattice-color); }
     #logo #lattice-hole { fill: #000; }
     body.photo-background #logo .flower-fill { fill: #e9b949; }
-    body.photo-background #logo .outline { stroke: #fff; stroke-width: 12px; }
+    body.photo-background #logo .outline { stroke: #fff; stroke-width: 6.7px; }  /* matches the logo lines */
     body.photo-background #logo g path:not(.outline):not(.flower-fill) { stroke: #fff; stroke-width: 1.5; }
     #logo .wood-panel { fill: #fff; }
 
@@ -157,11 +157,16 @@
     // Photo background version: the flower is filled with a solid golden yellow, with a dark
     // brown outline and the logo lines in white.
     const PHOTO_BACKGROUND = false;
+    const OUTLINE_FROM_START = false;
     let medallion = null;
     if (PHOTO_BACKGROUND) {
       document.body.classList.add('photo-background');
       medallion = el('g', { opacity: 0 }, svg);
       el('path', { d: GEOM.holePath, class: 'flower-fill' }, medallion);
+      if (OUTLINE_FROM_START) {
+        // The outline is part of the flower from the start, instead of tracing itself at the end.
+        el('path', { d: GEOM.outline, class: 'outline', fill: 'none', stroke: '#fff' }, medallion);
+      }
     }
 
     const lattice = document.getElementById('lattice');
@@ -533,7 +538,7 @@
       });
 
       fills.forEach((f) => f.setAttribute('opacity', 1 - pGaps));
-      outline.setAttribute('stroke-dashoffset', 1 - pOutline);
+      outline.setAttribute('stroke-dashoffset', OUTLINE_FROM_START ? 1 : 1 - pOutline);
       // Once fully drawn, drop the dash so the outline's start and end join cleanly.
       outline.setAttribute('stroke-dasharray', pOutline >= 1 ? 'none' : '1 1');
       // The outline draws in as a fine line, then thickens to match the lattice bars as the lattice appears.
