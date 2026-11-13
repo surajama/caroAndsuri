@@ -37,9 +37,10 @@
     /* Die-cut paper lattice behind the logo */
     #logo #lattice-tile path { fill: var(--lattice-color); }
     #logo #lattice-hole { fill: #000; }
-    body.photo-background #logo path { fill: #3b2417; }
-    body.photo-background #logo .outline { fill: none; stroke: #3b2417; }
-    body.photo-background #logo .flower-backing { fill: #fbf7ef; }  /* the area the lattice is cut away from */
+    body.photo-background #logo .medallion-disc { fill: #814e2f; stroke: #a07855; stroke-width: 5; }
+    body.photo-background #logo .medallion-inlay { fill: url(#inlay-grain); }
+    body.photo-background #logo .outline { stroke: #512508; stroke-width: 12px; }
+    body.photo-background #logo g path:not(.outline):not(.medallion-inlay) { stroke: #fff; stroke-width: 1.5; }
     #logo .wood-panel { fill: #fff; }
 
     /* Stained glass versions: dappled sunlight drifting slowly across the glass */
@@ -155,13 +156,29 @@
         'M0 0H170V170H0Z M40 22H130Q148 22 148 40V130Q148 148 130 148H40Q22 148 22 130V40Q22 22 40 22Z');
     }
 
-    // Photo background version: the flower is filled with a soft, nearly opaque white so the
-    // logo (drawn in dark walnut brown instead of white) reads clearly over the glass photo.
+    // Photo background version: the logo sits on a round brown medallion (the colour of the
+    // glass panel's frames), with the flower inlaid in light golden wood and the lines in white.
     const PHOTO_BACKGROUND = true;
-    let flowerBacking = null;
+    let medallion = null;
     if (PHOTO_BACKGROUND) {
       document.body.classList.add('photo-background');
-      flowerBacking = el('path', { d: GEOM.holePath, class: 'flower-backing', opacity: 0 }, svg);
+      svg.querySelector('defs').insertAdjacentHTML('beforeend', `
+        <pattern id="inlay-grain" patternUnits="userSpaceOnUse" x="-800" y="-800" width="1600" height="1600">
+          <image href="wood.jpg" width="1600" height="1600" preserveAspectRatio="none"/>
+        </pattern>
+        <!-- turns the dark walnut grain into light golden wood -->
+        <filter id="golden-wood" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" x="-600" y="-600" width="1200" height="1200">
+          <feColorMatrix type="saturate" values="0"/>
+          <feComponentTransfer>
+            <feFuncR type="linear" slope="0.75" intercept="0.66"/>
+            <feFuncG type="linear" slope="0.75" intercept="0.48"/>
+            <feFuncB type="linear" slope="0.6" intercept="0.26"/>
+          </feComponentTransfer>
+        </filter>`);
+      medallion = el('g', { class: 'medallion', opacity: 0 }, svg);
+      el('circle', { r: 536, class: 'medallion-disc' }, medallion);
+      el('path', { d: GEOM.holePath, fill: 'url(#inlay-grain)', filter: 'url(#golden-wood)',
+                   class: 'medallion-inlay' }, medallion);
     }
 
     const lattice = document.getElementById('lattice');
@@ -525,7 +542,7 @@
         }
       }
 
-      if (flowerBacking) flowerBacking.setAttribute('opacity', 0.9 * progress(t, [0, T.lettersIn[0]]));
+      if (medallion) medallion.setAttribute('opacity', progress(t, [0, T.lettersIn[0]]));
 
       units.forEach(({ unit }, k) => {
         unit.setAttribute('transform', `rotate(${72 * k * pMulti})`);
