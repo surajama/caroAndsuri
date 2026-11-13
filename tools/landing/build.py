@@ -27,14 +27,14 @@ CEILING = json.dumps({  # whole venue ceiling photo; centre = its twelve-pointed
 
 # Output file -> feature flags
 VARIANTS = {
-    'index.html':                {'SHOW_GRID': 'true',  'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}'},
-    'index-no-grid.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}'},
-    'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}'},
-    'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}'},
+    'index.html':                {'SHOW_GRID': 'true',  'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}', 'INVITE_LINK': 'false'},
+    'index-no-grid.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}', 'INVITE_LINK': 'false'},
+    'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}', 'INVITE_LINK': 'false'},
+    'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff', 'BACKGROUND': '{}', 'INVITE_LINK': 'false'},
     'index-glass-panel.html':    {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff',
-                                  'BACKGROUND': GLASS_WALL},
+                                  'BACKGROUND': GLASS_WALL, 'INVITE_LINK': 'true'},
     'index-ceiling.html':        {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff',
-                                  'BACKGROUND': CEILING},
+                                  'BACKGROUND': CEILING, 'INVITE_LINK': 'false'},
 }
 
 geom = json.dumps(json.loads((HERE / 'geom.json').read_text()),

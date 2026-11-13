@@ -73,6 +73,38 @@
       background-position: calc(50vw - var(--bg-w) * var(--bg-cx)) calc(50dvh - var(--bg-h) * var(--bg-cy));
     }
 
+    /* Invitation link: a gentle prompt once the logo has finished; tapping fades into the invitation */
+    .enter-hint {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: max(5dvh, 24px);
+      text-align: center;
+      color: #fff;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(17px, 2.6dvh, 24px);
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75), 0 0 2px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.2s ease;
+    }
+
+    .enter-hint.shown {
+      opacity: 1;
+      animation: hint-breathe 2.8s ease-in-out 1.2s infinite;
+    }
+
+    @keyframes hint-breathe {
+      50% { opacity: 0.55; }
+    }
+
+    body.leaving {
+      opacity: 0;
+      transition: opacity 0.7s ease;
+    }
+
     #logo .outline {
       fill: none;
       stroke: #fff;
@@ -560,6 +592,26 @@
 
     if (!STAINED_GLASS) delete T.sunlight;
     const END = Math.max(...Object.values(T).map(([, end]) => end));
+    // Optional: once the logo is complete, invite guests to tap through to the invitation cards.
+    const INVITE_LINK = __INVITE_LINK__;
+    if (INVITE_LINK) {
+      document.head.insertAdjacentHTML('beforeend',
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital@1&display=swap">');
+      const hint = document.createElement('div');
+      hint.className = 'enter-hint';
+      hint.textContent = 'Tap to open the invitation';
+      document.body.appendChild(hint);
+      let ready = false;
+      setTimeout(() => { ready = true; hint.classList.add('shown'); }, (END + 0.4) * 1000);
+      const open = () => {
+        if (!ready) return;
+        document.body.classList.add('leaving');
+        setTimeout(() => { location.href = 'invitation.html'; }, 700);
+      };
+      document.addEventListener('click', open);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(); });
+    }
+
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) {
       render(END);
