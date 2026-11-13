@@ -434,10 +434,6 @@
           : page.panels ? wordPanels(page, page.panels.fill, page.panels.edge, false)
           : page.border === 'lilies' ? lilyBorder(`lilies-${i}`)
           : corners(page.ink, page.accent);
-        if (page.window) {
-          // the white core of the card showing at the cut edge
-          art += `<path d="${toPath(outline(page.window))}" fill="none" stroke="#fffaf0" stroke-opacity="0.85" stroke-width="6"/>`;
-        }
 
         paper.innerHTML = `
           <svg viewBox="0 0 1000 ${H}" preserveAspectRatio="none" aria-hidden="true">${art}</svg>
