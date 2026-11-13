@@ -20,8 +20,6 @@ VARIANTS = {
     'index-stained-glass.html':  {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'false', 'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff'},
     'index-wood-and-glass.html': {'SHOW_GRID': 'true',  'STAINED_GLASS': 'true',  'WOOD': 'true',  'PHOTO_BACKGROUND': 'false', 'OUTLINE_FROM_START': 'false', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff'},
     'index-glass-panel.html':    {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#fff'},
-    'index-glass-panel-dark-yellow-outline.html':
-                                 {'SHOW_GRID': 'false', 'STAINED_GLASS': 'false', 'WOOD': 'false', 'PHOTO_BACKGROUND': 'true', 'OUTLINE_FROM_START': 'true', 'FLOWER_FILL': '#e9b949', 'OUTLINE_COLOUR': '#b3871a'},
 }
 
 geom = json.dumps(json.loads((HERE / 'geom.json').read_text()),
