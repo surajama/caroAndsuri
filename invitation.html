@@ -180,7 +180,9 @@
     const SHEETS = [
       { event: 'Mehendi & Welcome Party', paper: '#ecd2d0', ink: '#3f5f49', accent: '#b4566c', window: 'flower' },
       { event: 'Wedding Ceremony',        paper: '#e9b949', ink: '#553810', accent: '#fff7e6', window: 'rosette' },
-      { event: 'Reception',               paper: '#a8bea6', ink: '#2c4634', accent: '#fbf3e3', window: 'star' },
+      // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
+      { event: 'Reception',               paper: '#3a2a1c', ink: '#f7ecd6', accent: '#e9b949', window: 'star',
+        photo: { src: 'ceiling.jpg', size: '182.8% auto', position: '46.79% 59.77%' } },
       { event: 'Pheras',                  paper: '#3e5c48', ink: '#f4e8d0', accent: '#e9b949', window: 'smallFlower' },
       { event: 'Reception & Sangeet',     paper: '#f4ecdc', ink: '#3f5f49', accent: '#e9b949', window: null },
     ];
@@ -337,7 +339,17 @@
       paper.className = 'paper';
       paper.style.setProperty('--paper', page.paper);
       paper.style.setProperty('--ink', page.ink);
-      paper.style.backgroundImage = GRAIN;
+      if (page.photo) {
+        // a photo-printed card: the photo, gently darkened towards the words so they stay readable
+        const shade = 'linear-gradient(to bottom, rgba(20,12,6,0.12) 40%, rgba(20,12,6,0.62) 62%, rgba(20,12,6,0.72) 100%)';
+        paper.style.backgroundImage = `${shade}, url('${page.photo.src}')`;
+        paper.style.backgroundSize = `100% 100%, ${page.photo.size}`;
+        paper.style.backgroundPosition = `0 0, ${page.photo.position}`;
+        paper.style.backgroundRepeat = 'no-repeat';
+        paper.style.backgroundBlendMode = 'normal';
+      } else {
+        paper.style.backgroundImage = GRAIN;
+      }
       if (page.window) {
         paper.style.maskImage = paper.style.webkitMaskImage = windowMask(page.window);
         paper.style.maskSize = paper.style.webkitMaskSize = '100% 100%';
