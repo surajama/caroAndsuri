@@ -15,4 +15,4 @@ python3 tools/landing/build.py
 
 The logo was hand-traced from a photo of the original artwork, and one petal is rotated five times. These JSON files are now the master copy of the artwork.
 
-Variants: `index.html` (white lattice, current front-runner), `index-no-grid.html`, `index-stained-glass.html`, `index-wood-and-glass.html` (wood/glass uses `wood.jpg`).
+Variants: `index.html` (white lattice), `index-no-grid.html`, `index-stained-glass.html`, `index-wood-and-glass.html` (uses `wood.jpg`), and `index-glass-panel.html`: Caroline's current favourite. It has the stained-glass wall photo (`glass-wall.jpg`) as the background, a golden-yellow flower with a white outline shown from the start, and white logo lines.
