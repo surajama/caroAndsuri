@@ -37,7 +37,9 @@
     /* Die-cut paper lattice behind the logo */
     #logo #lattice-tile path { fill: var(--lattice-color); }
     #logo #lattice-hole { fill: #000; }
-    #logo .backing-glow { fill: #160b05; }  /* the area the lattice is cut away from */
+    body.photo-background #logo path { fill: #3b2417; }
+    body.photo-background #logo .outline { fill: none; stroke: #3b2417; }
+    body.photo-background #logo .flower-backing { fill: #fbf7ef; }  /* the area the lattice is cut away from */
     #logo .wood-panel { fill: #fff; }
 
     /* Stained glass versions: dappled sunlight drifting slowly across the glass */
@@ -153,17 +155,13 @@
         'M0 0H170V170H0Z M40 22H130Q148 22 148 40V130Q148 148 130 148H40Q22 148 22 130V40Q22 22 40 22Z');
     }
 
-    // Photo background version: a soft dark glow behind the logo keeps its fine white lines
-    // readable against the colourful glass.
+    // Photo background version: the flower is filled with a soft, nearly opaque white so the
+    // logo (drawn in dark walnut brown instead of white) reads clearly over the glass photo.
     const PHOTO_BACKGROUND = true;
+    let flowerBacking = null;
     if (PHOTO_BACKGROUND) {
       document.body.classList.add('photo-background');
-      svg.querySelector('defs').insertAdjacentHTML('beforeend', `
-        <filter id="glow-soften" filterUnits="userSpaceOnUse" x="-1000" y="-1000" width="2000" height="2000">
-          <feGaussianBlur stdDeviation="70"/>
-        </filter>`);
-      el('path', { d: GEOM.holePath, fill: '#160b05', opacity: 0.62, filter: 'url(#glow-soften)',
-                   class: 'backing-glow', transform: 'scale(1.08)' }, svg);
+      flowerBacking = el('path', { d: GEOM.holePath, class: 'flower-backing', opacity: 0 }, svg);
     }
 
     const lattice = document.getElementById('lattice');
@@ -526,6 +524,8 @@
           ));
         }
       }
+
+      if (flowerBacking) flowerBacking.setAttribute('opacity', 0.9 * progress(t, [0, T.lettersIn[0]]));
 
       units.forEach(({ unit }, k) => {
         unit.setAttribute('transform', `rotate(${72 * k * pMulti})`);
