@@ -89,7 +89,7 @@
       position: absolute;
       left: 10%;
       right: 10%;
-      top: 74%;
+      top: 18.5%;
       text-align: center;
       line-height: 1.25;
     }
@@ -110,6 +110,11 @@
     }
 
     .venue {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 78.5%;
+      text-align: center;
       font-size: 2.8cqw;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -129,7 +134,7 @@
     }
 
     .names.cover {
-      top: 83%;
+      top: 84%;
       font-size: 4.3cqw;
       letter-spacing: 0.22em;
     }
@@ -188,7 +193,7 @@
       { event: 'Wedding Ceremony', venue: 'Casa de Pilatos', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon' },
       // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
       { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, window: 'fountain',
-        photo: { src: 'ceiling.jpg', size: '103% auto', position: '0.0% 74.6%' } },
+        photo: { src: 'ceiling.jpg', size: '103% auto', position: '0.0% 47.8%' } },
       { event: 'Pheras', venue: 'Hacienda Villanueva del Pitamo',
         paper: SWATCH.olive, ink: SWATCH.cream, accent: SWATCH.cream, window: 'square' },
       { event: 'Reception & Sangeet', venue: 'Hacienda Villanueva del Pitamo', paper: SWATCH.blue, ink: SWATCH.burgundy, accent: SWATCH.burgundy, window: 'weddingQuatrefoil' },
@@ -197,7 +202,7 @@
     const BACK = { paper: SWATCH.brown, flower: SWATCH.cream };
 
     // Page coordinates are 0..1000 on each side; the mandala is centred here.
-    const CX = 500, CY = 400;
+    const CX = 500, CY = 500;  // the exact centre of the card
 
     // ---- Shapes, as radius-by-angle functions (angles in degrees, 0 = right, clockwise) ----
     const rad = (deg) => (deg * Math.PI) / 180;
@@ -216,29 +221,29 @@
     };
     const SHAPES = {
       // Card 0: the logo's flower.
-      flower: flowerR(255),
+      flower: flowerR(240),
       // Card 1: the outer frame of the Mehendi invitation's mandala: flat sides with small stepped
       // notches at their ends, and scalloped curves around each corner.
       mehendiFrame: (deg) => {
-        const a = 184, d = Math.abs(nearest(deg, 0, 4));
+        const a = 173, d = Math.abs(nearest(deg, 0, 4));
         if (d <= 15) return a / Math.cos(rad(d));
         if (d <= 18.5) return (0.935 * a) / Math.cos(rad(d));
         return a * (0.985 + 0.07 * Math.pow(Math.sin((Math.PI * (d - 18.5)) / 26.5), 0.6));
       },
       // Card 2: the octagonal fountain plaza at the centre of the Casa de Pilatos garden.
-      gardenOctagon: (deg) => (148 / Math.cos(rad(nearest(deg, -90, 8)))),
+      gardenOctagon: (deg) => (139 / Math.cos(rad(nearest(deg, -90, 8)))),
       // Card 3: the courtyard fountain basin: a square with a rounded lobe bulging from each side.
       fountain: (deg) => {
-        const s = 86, lobe = 40, d = rad(Math.abs(nearest(deg, 0, 4)));
+        const s = 81, lobe = 38, d = rad(Math.abs(nearest(deg, 0, 4)));
         const square = s / Math.cos(d);
         const arc = s * Math.sin(d) <= lobe ? s * Math.cos(d) + Math.sqrt(lobe * lobe - (s * Math.sin(d)) ** 2) : 0;
         return Math.max(square, arc);
       },
       // Card 4: a square.
-      square: (deg) => 64 / Math.cos(rad(nearest(deg, 0, 4))),
+      square: (deg) => 60 / Math.cos(rad(nearest(deg, 0, 4))),
       // Card 5: the Wedding invitation's window: four pointed arch tips with soft curves between.
       weddingQuatrefoil: (deg) => {
-        const R = 58, f = Math.abs(nearest(deg, -90, 4)) / 45;
+        const R = 55, f = Math.abs(nearest(deg, -90, 4)) / 45;
         return R * (1 - 0.42 * Math.pow(f, 0.55) + 0.1 * Math.pow(Math.sin(Math.PI * f), 1.5));
       },
     };
@@ -359,7 +364,7 @@
     const book = document.getElementById('book');
     const dots = document.getElementById('dots');
     // The back of the invitation: dark board with a tiny flower at the centre of the mandala.
-    SHAPES.backFlower = flowerR(30);
+    SHAPES.backFlower = flowerR(28);
     const back = document.createElement('div');
     back.className = 'sheet back';
     back.innerHTML = `<div class="paper" style="--paper:${BACK.paper}; background-image:${GRAIN}">
@@ -409,8 +414,8 @@
             ${smallBloom(110, 15, 9, page.accent, page.ink)}
             <circle cx="96" cy="15" r="2.4" fill="currentColor"/><circle cx="124" cy="15" r="2.4" fill="currentColor"/>
           </svg>
-          ${page.venue ? `<div class="venue">${page.venue}</div>` : ''}
         </div>` : ''}
+        ${page.venue ? `<div class="venue">${page.venue}</div>` : ''}
         ${page.event ? '' : `<div class="names cover">${NAMES}</div>`}`;
 
       sheet.appendChild(paper);
