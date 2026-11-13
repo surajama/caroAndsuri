@@ -188,8 +188,9 @@
     const SWATCH = { olive: '#858248', lilac: '#937C91', blue: '#8494A1', cream: '#D7CFBE', burgundy: '#491B12', brown: '#2D2011' };
     const SHEETS = [
       { event: null, paper: SWATCH.lilac, ink: SWATCH.cream, accent: SWATCH.cream, window: 'flower' },
+      // Printed all over with a small Mughal trellis of flower bouquets instead of the border and sprigs.
       { event: 'Mehendi', venue: 'Faena River Club',
-        paper: SWATCH.burgundy, ink: SWATCH.cream, accent: SWATCH.cream, window: 'mehendiFrame' },
+        paper: SWATCH.burgundy, ink: SWATCH.cream, accent: SWATCH.cream, window: 'mehendiFrame', pattern: 'trellis' },
       { event: 'Wedding Ceremony', venue: 'Casa de Pilatos', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon' },
       // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
       { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, window: 'fountain',
@@ -333,6 +334,70 @@
         .map(([x, y, sx, sy]) => `<g transform="translate(${x} ${y}) scale(${sx} ${sy})">${one}</g>`).join('');
     }
 
+    // ---- An all-over Mughal-style pattern: a lilac ogee trellis with a little bouquet in every cell ----
+    // Cells are TW x TH and set in a diamond (half-drop) arrangement; one cell is centred on the card.
+    const TW = 180, TH = 262;
+
+    function blossom(x, y, r, petalFill, centreFill) {
+      let s = '';
+      for (let k = 0; k < 10; k++) {
+        const a = k * 36, px = x + Math.cos(rad(a)) * r * 0.58, py = y + Math.sin(rad(a)) * r * 0.58;
+        s += petal(px, py, a, r * 0.46, r * 0.24, petalFill);
+      }
+      return s + `<circle cx="${x}" cy="${y}" r="${r * 0.32}" fill="${centreFill}"/>`;
+    }
+
+    // A bouquet centred on (0, 0): three blossoms and two buds on olive stems, with long leaves.
+    function bouquet(petalFill, centreFill) {
+      const leaf = SWATCH.olive;
+      let s = `<g fill="none" stroke="${leaf}" stroke-width="3.4" stroke-linecap="round">
+        <path d="M0 96 C 0 40, 0 -10, 0 -50"/>
+        <path d="M0 22 C -14 8, -28 -4, -38 -14"/><path d="M0 22 C 14 8, 28 -4, 38 -14"/>
+        <path d="M0 -24 C -8 -34, -16 -40, -21 -46"/><path d="M0 -24 C 8 -34, 16 -40, 21 -46"/>
+      </g>`;
+      s += petal(-19, 74, -38, 24, 6.5, leaf) + petal(19, 74, 38, 24, 6.5, leaf);
+      s += petal(-14, 46, -58, 17, 5, leaf) + petal(14, 46, 58, 17, 5, leaf);
+      s += petal(-22, -49, -60, 7, 4, petalFill) + petal(22, -49, 60, 7, 4, petalFill);
+      s += blossom(-40, -18, 17, petalFill, centreFill) + blossom(40, -18, 17, petalFill, centreFill);
+      s += blossom(0, -64, 22, petalFill, centreFill);
+      return s;
+    }
+
+    function trellisPattern(id) {
+      const w = TW, h = TH, line = SWATCH.lilac;
+      // one cell's four ogee sides, meeting at the middle of each tile edge
+      const sides = `M${w / 2} 0 C ${w * 0.6} ${h * 0.15}, ${w} ${h * 0.2}, ${w} ${h / 2}
+        C ${w} ${h * 0.8}, ${w * 0.6} ${h * 0.85}, ${w / 2} ${h}
+        C ${w * 0.4} ${h * 0.85}, 0 ${h * 0.8}, 0 ${h / 2}
+        C 0 ${h * 0.2}, ${w * 0.4} ${h * 0.15}, ${w / 2} 0 Z`;
+      const knots = [[w / 2, 0], [w, h / 2], [w / 2, h], [0, h / 2]]
+        .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${line}"/><circle cx="${x}" cy="${y}" r="3" fill="${SWATCH.burgundy}"/>`).join('');
+      // bouquets: cream-and-lilac in the cell centred on the tile, lilac-and-cream in the cells at its corners
+      const corner = bouquet(SWATCH.lilac, SWATCH.cream);
+      const scale = 0.62;
+      return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${h}" x="${CX - w / 2}" y="${CY - h / 2}">
+        <path d="${sides}" fill="none" stroke="${line}" stroke-width="5"/>
+        ${knots}
+        <g transform="translate(${w / 2} ${h / 2}) scale(${scale})">${bouquet(SWATCH.cream, SWATCH.lilac)}</g>
+        ${[[0, 0], [w, 0], [0, h], [w, h]].map(([x, y]) => `<g transform="translate(${x} ${y}) scale(${scale})">${corner}</g>`).join('')}
+      </pattern>`;
+    }
+
+    // The pattern over the whole card, with clear space around the window and behind the words.
+    function patternArt(page, id) {
+      // clear panels in the paper colour, each edged with a fine lilac line so they sit in the pattern like frames
+      const panel = `fill="${page.paper}" stroke="${SWATCH.lilac}" stroke-width="2.5"`;
+      let s = `<defs>${trellisPattern(id)}</defs><rect width="1000" height="${H}" fill="url(#${id})"/>`;
+      s += `<path d="${toPath(outline(page.window, 26))}" ${panel}/>`;
+      const titleY = 185 - 30, venueY = H - 215 - 22;
+      s += `<rect x="300" y="${titleY}" width="400" height="142" rx="71" ${panel}/>`;
+      if (page.venue) {
+        const width = 48 + page.venue.length * 19;
+        s += `<rect x="${500 - width / 2}" y="${venueY}" width="${width}" height="72" rx="36" ${panel}/>`;
+      }
+      return s;
+    }
+
     // A ring of tiny printed leaves just outside a window, following its edge.
     function windowRing(shape, colour) {
       const pts = outline(shape, 15, 720);
@@ -430,11 +495,11 @@
           paper.style.maskSize = paper.style.webkitMaskSize = '100% 100%';
         }
 
-        let art = border(page.ink, page.accent) + corners(page.ink, page.accent);
+        let art = page.pattern ? patternArt(page, `trellis-${i}`) : border(page.ink, page.accent) + corners(page.ink, page.accent);
         if (page.window) {
-          // the white core of the card showing at the cut edge, then the printed leaf ring
+          // the white core of the card showing at the cut edge, then (on plain cards) the printed leaf ring
           art += `<path d="${toPath(outline(page.window))}" fill="none" stroke="#fffaf0" stroke-opacity="0.85" stroke-width="6"/>`;
-          art += windowRing(page.window, page.accent);
+          if (!page.pattern) art += windowRing(page.window, page.accent);
         }
 
         paper.innerHTML = `
