@@ -186,7 +186,7 @@
         paper: SWATCH.burgundy, ink: SWATCH.cream, accent: SWATCH.cream, window: 'mehendiFrame', pattern: 'trellis' },
       { event: 'Wedding Ceremony', venue: 'Casa de Pilatos', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon' },
       // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
-      { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, window: 'fountain',
+      { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, text: SWATCH.blue, window: 'fountain',
         // aspect = photo height / width; (fx, fy) = the star's centre in the photo; minZoom = photo width in card widths
         photo: { src: 'ceiling.jpg', aspect: 4032 / 3024, fx: 1468 / 3024, fy: 1992 / 4032, minZoom: 1.03 } },
       { event: 'Pheras', venue: 'Hacienda Villanueva del Pitamo',
@@ -405,7 +405,7 @@
         const paper = document.createElement('div');
         paper.className = 'paper';
         paper.style.setProperty('--paper', page.paper);
-        paper.style.setProperty('--ink', page.ink);
+        paper.style.setProperty('--ink', page.text || page.ink);  // lettering colour (decoration uses ink)
         if (page.photo) {
           // a photo-printed card: the photo, gently darkened at the top and bottom so the words stay readable
           const shade = 'linear-gradient(to bottom, rgba(20,12,6,0.72) 0%, rgba(20,12,6,0.55) 18%, rgba(20,12,6,0.1) 34%, rgba(20,12,6,0.1) 66%, rgba(20,12,6,0.55) 82%, rgba(20,12,6,0.72) 100%)';
