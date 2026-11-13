@@ -60,16 +60,17 @@
       50%      { transform: translate(55px, -30px); }
     }
 
-    /* Photo background version: the stained-glass wall photo (glass-wall.jpg, 1136 x 1160 px, cropped on
-       the tile grid so it repeats seamlessly). It is sized from the logo so the flower always spans
-       about 3.4 tiles, and positioned so the flower's centre sits exactly where the middle four tiles
-       of a 4 x 4 block meet (measured from the circle centres at 0.4946, 0.5033 of the image). */
+    /* Photo background versions: a photo sized from the logo and positioned so a chosen point of it
+       (--bg-cx, --bg-cy, as fractions of the image) sits exactly under the flower's centre.
+       --bg-scale is the image width in logo widths; --bg-aspect is its height / width. */
     body.photo-background {
-      --bg-w: calc(var(--logo-size) * 2.062);
-      --bg-h: calc(var(--bg-w) * 1160 / 1136);
-      background: #8a5d3b url('glass-wall.jpg') repeat;
+      --bg-w: calc(var(--logo-size) * var(--bg-scale));
+      --bg-h: calc(var(--bg-w) * var(--bg-aspect));
+      background-color: var(--bg-colour);
+      background-image: var(--bg-image);
+      background-repeat: var(--bg-repeat);
       background-size: var(--bg-w) var(--bg-h);
-      background-position: calc(50vw - var(--bg-w) * 0.4946) calc(50dvh - var(--bg-h) * 0.5033);
+      background-position: calc(50vw - var(--bg-w) * var(--bg-cx)) calc(50dvh - var(--bg-h) * var(--bg-cy));
     }
 
     #logo .outline {
@@ -167,6 +168,8 @@
       document.body.classList.add('photo-background');
       document.body.style.setProperty('--flower-fill', '#e9b949');
       document.body.style.setProperty('--outline-colour', '#fff');
+      const BACKGROUND = {};
+      for (const [key, value] of Object.entries(BACKGROUND)) document.body.style.setProperty(`--bg-${key}`, value);
       medallion = el('g', { opacity: 0 }, svg);
       el('path', { d: GEOM.holePath, class: 'flower-fill' }, medallion);
       if (OUTLINE_FROM_START) {
