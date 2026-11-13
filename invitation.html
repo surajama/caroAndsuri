@@ -191,8 +191,9 @@
         panels: { fill: SWATCH.blue, edge: SWATCH.cream },
         // aspect = photo height / width; (fx, fy) = the star's centre in the photo; minZoom = photo width in card widths
         photo: { src: 'ceiling.jpg', aspect: 4032 / 3024, fx: 1468 / 3024, fy: 1992 / 4032, minZoom: 1.03 } },
+      // A printed border of lilies on wavy stripes (Caroline's fabric reference), no corner sprigs.
       { event: 'Pheras', venue: 'Hacienda Villanueva del Pitamo',
-        paper: SWATCH.olive, ink: SWATCH.cream, accent: SWATCH.cream, window: 'square' },
+        paper: SWATCH.olive, ink: SWATCH.cream, accent: SWATCH.cream, window: 'square', border: 'lilies' },
       { event: 'Reception & Sangeet', venue: 'Hacienda Villanueva del Pitamo', paper: SWATCH.blue, ink: SWATCH.burgundy, accent: SWATCH.burgundy, window: 'weddingQuatrefoil' },
     ];
     // The back of the invitation, seen through the last card's window.
@@ -318,6 +319,24 @@
     }
 
     // The pattern over the whole card, with clear space around the window and behind the words.
+    // ---- A printed border of lilies on wavy stripes (Caroline's fabric reference, recoloured) ----
+    // lily-border.png is one repeat, 392 x 317 px, with a lily bouquet centred at (196, 120). It runs round the
+    // card in a band about 8% of the card's width (as on the Sangeet reference card), lilies centred in the band.
+    const LILY = { src: 'lily-border.png', width: 392, height: 317, cx: 196, cy: 120, scale: 0.287, band: 80 };
+
+    function lilyBorder(id) {
+      const { src, width, height, cx, cy, scale, band } = LILY;
+      const w = width * scale, h = height * scale, half = band / 2;
+      const tile = (key, x, y) => `<pattern id="${id}-${key}" patternUnits="userSpaceOnUse" width="${w}" height="${h}"
+          x="${x - cx * scale}" y="${y - cy * scale}"><image href="${src}" width="${w}" height="${h}" preserveAspectRatio="none"/></pattern>`;
+      return `<defs>${tile('top', 500, half)}${tile('bottom', 500, H - half)}${tile('left', half, CY)}${tile('right', 1000 - half, CY)}</defs>
+        <rect x="0" y="0" width="1000" height="${band}" fill="url(#${id}-top)"/>
+        <rect x="0" y="${H - band}" width="1000" height="${band}" fill="url(#${id}-bottom)"/>
+        <rect x="0" y="${band}" width="${band}" height="${H - 2 * band}" fill="url(#${id}-left)"/>
+        <rect x="${1000 - band}" y="${band}" width="${band}" height="${H - 2 * band}" fill="url(#${id}-right)"/>
+        <rect x="${band}" y="${band}" width="${1000 - 2 * band}" height="${H - 2 * band}" fill="none" stroke="${SWATCH.cream}" stroke-width="3"/>`;
+    }
+
     // Oval panels behind the event title and the venue (and a matching panel around the window when asked),
     // like little printed labels, so the words read clearly over a pattern or photo.
     function wordPanels(page, fill, edge, aroundWindow) {
@@ -438,6 +457,7 @@
 
         let art = page.pattern ? patternArt(page, `trellis-${i}`)
           : page.panels ? wordPanels(page, page.panels.fill, page.panels.edge, false)
+          : page.border === 'lilies' ? lilyBorder(`lilies-${i}`)
           : corners(page.ink, page.accent);
         if (page.window) {
           // the white core of the card showing at the cut edge, then (on plain cards) the printed leaf ring
