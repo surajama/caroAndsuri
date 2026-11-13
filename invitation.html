@@ -186,7 +186,9 @@
         paper: SWATCH.burgundy, ink: SWATCH.cream, accent: SWATCH.cream, window: 'mehendiFrame', pattern: 'trellis' },
       { event: 'Wedding Ceremony', venue: 'Casa de Pilatos', paper: SWATCH.cream, ink: SWATCH.olive, accent: SWATCH.olive, window: 'gardenOctagon' },
       // Printed with the venue ceiling, its twelve-pointed star centred behind this card's window.
-      { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, text: SWATCH.blue, window: 'fountain',
+      // Words in blue oval panels, no corner sprigs.
+      { event: 'Reception', venue: 'Casa de Pilatos', paper: '#3a2a1c', ink: SWATCH.cream, accent: SWATCH.cream, window: 'fountain',
+        panels: { fill: SWATCH.blue, edge: SWATCH.cream },
         // aspect = photo height / width; (fx, fy) = the star's centre in the photo; minZoom = photo width in card widths
         photo: { src: 'ceiling.jpg', aspect: 4032 / 3024, fx: 1468 / 3024, fy: 1992 / 4032, minZoom: 1.03 } },
       { event: 'Pheras', venue: 'Hacienda Villanueva del Pitamo',
@@ -316,18 +318,25 @@
     }
 
     // The pattern over the whole card, with clear space around the window and behind the words.
-    function patternArt(page, id) {
-      // clear panels in the paper colour, each edged with a fine lilac line so they sit in the pattern like frames
-      const panel = `fill="${page.paper}" stroke="${SWATCH.lilac}" stroke-width="2.5"`;
-      let s = `<defs>${trellisPattern(id)}</defs><rect width="1000" height="${H}" fill="url(#${id})"/>`;
-      s += `<path d="${toPath(outline(page.window, 26))}" ${panel}/>`;
+    // Oval panels behind the event title and the venue (and a matching panel around the window when asked),
+    // like little printed labels, so the words read clearly over a pattern or photo.
+    function wordPanels(page, fill, edge, aroundWindow) {
+      const panel = `fill="${fill}" stroke="${edge}" stroke-width="2.5"`;
+      let s = aroundWindow ? `<path d="${toPath(outline(page.window, 26))}" ${panel}/>` : '';
       const titleY = 185 - 30, venueY = H - 215 - 22;
-      s += `<rect x="300" y="${titleY}" width="400" height="106" rx="53" ${panel}/>`;
+      const titleWidth = Math.max(400, 120 + page.event.length * 30);
+      s += `<rect x="${500 - titleWidth / 2}" y="${titleY}" width="${titleWidth}" height="106" rx="53" ${panel}/>`;
       if (page.venue) {
         const width = 48 + page.venue.length * 19;
         s += `<rect x="${500 - width / 2}" y="${venueY}" width="${width}" height="72" rx="36" ${panel}/>`;
       }
       return s;
+    }
+
+    // The pattern over the whole card, with clear burgundy panels edged in lilac around the window and words.
+    function patternArt(page, id) {
+      return `<defs>${trellisPattern(id)}</defs><rect width="1000" height="${H}" fill="url(#${id})"/>` +
+        wordPanels(page, page.paper, SWATCH.lilac, true);
     }
 
     // A ring of tiny printed leaves just outside a window, following its edge.
@@ -427,7 +436,9 @@
           paper.style.maskSize = paper.style.webkitMaskSize = '100% 100%';
         }
 
-        let art = page.pattern ? patternArt(page, `trellis-${i}`) : corners(page.ink, page.accent);
+        let art = page.pattern ? patternArt(page, `trellis-${i}`)
+          : page.panels ? wordPanels(page, page.panels.fill, page.panels.edge, false)
+          : corners(page.ink, page.accent);
         if (page.window) {
           // the white core of the card showing at the cut edge, then (on plain cards) the printed leaf ring
           art += `<path d="${toPath(outline(page.window))}" fill="none" stroke="#fffaf0" stroke-opacity="0.85" stroke-width="6"/>`;
